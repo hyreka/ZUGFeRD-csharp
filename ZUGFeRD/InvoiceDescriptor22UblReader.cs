@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -32,7 +32,7 @@ namespace s2industries.ZUGFeRD
     {
         /// <summary>
         /// Parses the ZUGFeRD invoice from the given stream.
-        /// 
+        ///
         /// Make sure that the stream is open, otherwise an IllegalStreamException exception is thrown.
         /// Important: the stream will not be closed by this function.
         /// </summary>
@@ -60,21 +60,21 @@ namespace s2industries.ZUGFeRD
             {
                 isInvoice = false;
             }
-            
+
             if (isInvoice)
             {
-                nsmgr.AddNamespace("ubl", "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2");                
+                nsmgr.AddNamespace("ubl", "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2");
             }
             else
             {
                 nsmgr.AddNamespace("ubl", "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2");
             }
-                     
+
             nsmgr.AddNamespace("cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2");
             nsmgr.AddNamespace("cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2");
 
-            string _typeSelector = "//cbc:InvoiceTypeCode";
-            string _tradeLineItemSelector = "//cac:InvoiceLine";
+            string typeSelector = "//cbc:InvoiceTypeCode";
+            string tradeLineItemSelector = "//cac:InvoiceLine";
             XmlNode baseNode = null;
             if (isInvoice)
             {
@@ -86,8 +86,8 @@ namespace s2industries.ZUGFeRD
             }
             else
             {
-                _typeSelector = "//cbc:CreditNoteTypeCode";
-                _tradeLineItemSelector = "//cac:CreditNoteLine";
+                typeSelector = "//cbc:CreditNoteTypeCode";
+                tradeLineItemSelector = "//cac:CreditNoteLine";
                 baseNode = doc.SelectSingleNode("/ubl:CreditNote", nsmgr);
                 if (baseNode == null)
                 {
@@ -99,10 +99,10 @@ namespace s2industries.ZUGFeRD
             {
                 IsTest = XmlUtils.NodeAsBool(doc.DocumentElement, "//cbc:TestIndicator", nsmgr, false),
                 BusinessProcess = XmlUtils.NodeAsString(doc.DocumentElement, "//cbc:ProfileID", nsmgr),
-                Profile = Profile.XRechnung, //default(Profile).FromString(XmlUtils.NodeAsString(doc.DocumentElement, "//ram:GuidelineSpecifiedDocumentContextParameter/ram:ID", nsmgr)),                
+                Profile = Profile.XRechnung, //default(Profile).FromString(XmlUtils.NodeAsString(doc.DocumentElement, "//ram:GuidelineSpecifiedDocumentContextParameter/ram:ID", nsmgr)),
                 InvoiceNo = XmlUtils.NodeAsString(doc.DocumentElement, "//cbc:ID", nsmgr),
                 InvoiceDate = XmlUtils.NodeAsDateTime(doc.DocumentElement, "//cbc:IssueDate", nsmgr),
-                Type = default(InvoiceType).FromString(XmlUtils.NodeAsString(doc.DocumentElement, _typeSelector, nsmgr))
+                Type = default(InvoiceType).FromString(XmlUtils.NodeAsString(doc.DocumentElement, typeSelector, nsmgr))
             };
 
             foreach (XmlNode node in baseNode.SelectNodes("./cbc:Note", nsmgr))
@@ -110,13 +110,13 @@ namespace s2industries.ZUGFeRD
                 string content = XmlUtils.NodeAsString(node, ".", nsmgr);
                 if (string.IsNullOrWhiteSpace(content)) continue;
                 var contentParts = content.Split(new char[] { '#' }, StringSplitOptions.RemoveEmptyEntries);
-                string _subjectCode = String.Empty;
+                string subjectCodeAsString = String.Empty;
                 if (contentParts.Length > 1 && contentParts[0].Length == 3)
                 {
-                    _subjectCode = contentParts[0];
+                    subjectCodeAsString = contentParts[0];
                     content = contentParts[1];
                 }
-                SubjectCodes subjectCode = default(SubjectCodes).FromString(_subjectCode);
+                SubjectCodes subjectCode = default(SubjectCodes).FromString(subjectCodeAsString);
                 retval.AddNote(content, subjectCode);
             }
 
@@ -217,7 +217,7 @@ namespace s2industries.ZUGFeRD
 
             //        retval.AddAdditionalReferencedDocument(id: _issuerAssignedID,
             //                                               typeCode: default(AdditionalReferencedDocumentTypeCode).FromString(_typeCode),
-            //                                               issueDateTime: _date,                                                           
+            //                                               issueDateTime: _date,
             //                                               referenceTypeCode: default(ReferenceTypeCodes).FromString(_referenceTypeCode),
             //                                               name: _name,
             //                                               attachmentBinaryObject: data,
@@ -227,7 +227,7 @@ namespace s2industries.ZUGFeRD
             //    {
             //        retval.AddAdditionalReferencedDocument(id: _issuerAssignedID,
             //                                               typeCode: default(AdditionalReferencedDocumentTypeCode).FromString(_typeCode),
-            //                                               issueDateTime: _date,                                                           
+            //                                               issueDateTime: _date,
             //                                               referenceTypeCode: default(ReferenceTypeCodes).FromString(_referenceTypeCode),
             //                                               name: _name);
             //    }
@@ -279,7 +279,7 @@ namespace s2industries.ZUGFeRD
             }
 
             // TODO: Multiple SpecifiedTradeSettlementPaymentMeans can exist for each account/institution (with different SEPA?)
-            PaymentMeans _tempPaymentMeans = new PaymentMeans()
+            PaymentMeans tempPaymentMeans = new PaymentMeans()
             {
                 TypeCode = default(PaymentMeansTypeCodes).FromString(XmlUtils.NodeAsString(doc.DocumentElement, "//cac:PaymentMeans/cbc:PaymentMeansCode", nsmgr)),
                 Information = XmlUtils.NodeAsString(doc.DocumentElement, "//cac:PaymentMeans/cbc:PaymentMeansCode/@name", nsmgr),
@@ -292,14 +292,14 @@ namespace s2industries.ZUGFeRD
 
             if (!string.IsNullOrWhiteSpace(financialCardId) || !string.IsNullOrWhiteSpace(financialCardCardholderName))
             {
-                _tempPaymentMeans.FinancialCard = new FinancialCard()
+                tempPaymentMeans.FinancialCard = new FinancialCard()
                 {
                     Id = financialCardId,
                     CardholderName = financialCardCardholderName
                 };
             }
 
-            retval.PaymentMeans = _tempPaymentMeans;
+            retval.PaymentMeans = tempPaymentMeans;
 
             retval.BillingPeriodStart = XmlUtils.NodeAsDateTime(doc.DocumentElement, "//cac:InvoicePeriod/cbc:StartDate", nsmgr);
             retval.BillingPeriodEnd = XmlUtils.NodeAsDateTime(doc.DocumentElement, "//cac:InvoicePeriod/cbc:EndDate", nsmgr);
@@ -330,7 +330,7 @@ namespace s2industries.ZUGFeRD
             }
 
             // As both document level and document item level element have same name
-            // only using the //cac:AllowanceCharge gives all the allowances from the file 
+            // only using the //cac:AllowanceCharge gives all the allowances from the file
             // so we specify the node with the parent node
             foreach (XmlNode node in baseNode.SelectNodes("./cac:AllowanceCharge", nsmgr))
             {
@@ -341,7 +341,8 @@ namespace s2industries.ZUGFeRD
                                                XmlUtils.NodeAsString(node, ".//cbc:AllowanceChargeReason", nsmgr),
                                                default(TaxTypes).FromString(XmlUtils.NodeAsString(node, ".//cac:TaxCategory/cac:TaxScheme/cbc:ID", nsmgr)),
                                                default(TaxCategoryCodes).FromString(XmlUtils.NodeAsString(node, ".//cac:TaxCategory/cbc:ID", nsmgr)),
-                                               XmlUtils.NodeAsDecimal(node, ".//cac:TaxCategory/cbc:Percent", nsmgr, 0).Value);
+                                               XmlUtils.NodeAsDecimal(node, ".//cac:TaxCategory/cbc:Percent", nsmgr, 0).Value,
+                                               EnumExtensions.FromDescription<AllowanceReasonCodes>(XmlUtils.NodeAsString(node, "./cbc:AllowanceChargeReasonCode", nsmgr)));
             }
 
             // TODO: Find value //foreach (XmlNode node in doc.SelectNodes("//ram:SpecifiedLogisticsServiceCharge", nsmgr))
@@ -364,7 +365,7 @@ namespace s2industries.ZUGFeRD
 
             XmlNode despatchDocumentReferenceIdNode = baseNode.SelectSingleNode("./cac:DespatchDocumentReference/cbc:ID", nsmgr);
             if (despatchDocumentReferenceIdNode != null)
-            {                
+            {
                 retval.SetDespatchAdviceReferencedDocument(despatchDocumentReferenceIdNode.InnerText);
             }
 
@@ -373,15 +374,15 @@ namespace s2industries.ZUGFeRD
                 dueDate: XmlUtils.NodeAsDateTime(doc.DocumentElement, "//cbc:DueDate", nsmgr)
             );
 
-            retval.LineTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:LineExtensionAmount", nsmgr, 0).Value;
-            retval.ChargeTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:ChargeTotalAmount", nsmgr, null);
-            retval.AllowanceTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:AllowanceTotalAmount", nsmgr, null);
-            retval.TaxBasisAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:TaxExclusiveAmount", nsmgr, null);
-            retval.TaxTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:TaxTotal/cbc:TaxAmount", nsmgr, 0).Value;
-            retval.GrandTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount", nsmgr, 0).Value; ;
-            retval.RoundingAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:PayableRoundingAmount", nsmgr, 0).Value;
-            retval.TotalPrepaidAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:PrepaidAmount", nsmgr, null);
-            retval.DuePayableAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:PayableAmount", nsmgr, 0).Value;
+            retval.LineTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:LineExtensionAmount", nsmgr);
+            retval.ChargeTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:ChargeTotalAmount", nsmgr);
+            retval.AllowanceTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:AllowanceTotalAmount", nsmgr);
+            retval.TaxBasisAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:TaxExclusiveAmount", nsmgr);
+            retval.TaxTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:TaxTotal/cbc:TaxAmount", nsmgr);
+            retval.GrandTotalAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount", nsmgr);
+            retval.RoundingAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:PayableRoundingAmount", nsmgr);
+            retval.TotalPrepaidAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:PrepaidAmount", nsmgr);
+            retval.DuePayableAmount = XmlUtils.NodeAsDecimal(doc.DocumentElement, "//cac:LegalMonetaryTotal/cbc:PayableAmount", nsmgr);
 
             // TODO: Find value //foreach (XmlNode node in doc.SelectNodes("//ram:ApplicableHeaderTradeSettlement/ram:ReceivableSpecifiedTradeAccountingAccount", nsmgr))
             //{
@@ -430,7 +431,7 @@ namespace s2industries.ZUGFeRD
 
                 XmlNode binaryObjectNode = node.SelectSingleNode(".//cac:Attachment/cbc:EmbeddedDocumentBinaryObject", nsmgr);
                 if (binaryObjectNode != null)
-                {                    
+                {
                     document.Filename = binaryObjectNode.Attributes["filename"]?.InnerText;
                     document.AttachmentBinaryObject = Convert.FromBase64String(binaryObjectNode.InnerText);
                 }
@@ -444,13 +445,13 @@ namespace s2industries.ZUGFeRD
                 Name = String.Empty // TODO: Find value //Name = XmlUtils.NodeAsString(doc.DocumentElement, "//ram:ApplicableHeaderTradeAgreement/ram:SpecifiedProcuringProject/ram:Name", nsmgr)
             };
 
-            foreach (XmlNode node in doc.SelectNodes(_tradeLineItemSelector, nsmgr))
+            foreach (XmlNode node in doc.SelectNodes(tradeLineItemSelector, nsmgr))
             {
                 retval.TradeLineItems.AddRange(_parseTradeLineItem(node, nsmgr));
             }
 
             return retval;
-        } // !Load()        
+        } // !Load()
 
 
         public override bool IsReadableByThisReaderVersion(Stream stream)
@@ -467,7 +468,7 @@ namespace s2industries.ZUGFeRD
 
         private new bool _IsReadableByThisReaderVersion(Stream stream, IList<string> validURIs)
         {
-            long _oldStreamPosition = stream.Position;
+            long oldStreamPosition = stream.Position;
             stream.Position = 0;
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
             {
@@ -476,13 +477,13 @@ namespace s2industries.ZUGFeRD
                 {
                     if (data.Contains(string.Format("=\"{0}\"", validURI.ToLower())))
                     {
-                        stream.Position = _oldStreamPosition;
+                        stream.Position = oldStreamPosition;
                         return true;
                     }
                 }
             }
 
-            stream.Position = _oldStreamPosition;
+            stream.Position = oldStreamPosition;
             return false;
         }
 
@@ -492,11 +493,11 @@ namespace s2industries.ZUGFeRD
             {
                 return null;
             }
-            
+
             List<TradeLineItem> resultList = new List<TradeLineItem>();
 
-            string _lineId = XmlUtils.NodeAsString(tradeLineItem, ".//cbc:ID", nsmgr);
-            TradeLineItem item = new TradeLineItem(_lineId)
+            string lineId = XmlUtils.NodeAsString(tradeLineItem, ".//cbc:ID", nsmgr);
+            TradeLineItem item = new TradeLineItem(lineId)
             {
                 GlobalID = new GlobalID(default(GlobalIDSchemeIdentifiers).FromString(XmlUtils.NodeAsString(tradeLineItem, "./cac:Item/cac:StandardItemIdentification/cbc:ID/@schemeID", nsmgr)),
                                         XmlUtils.NodeAsString(tradeLineItem, "./cac:Item/cac:StandardItemIdentification/cbc:ID", nsmgr)),
@@ -517,12 +518,12 @@ namespace s2industries.ZUGFeRD
                 BillingPeriodEnd = XmlUtils.NodeAsDateTime(tradeLineItem, ".//cac:InvoicePeriod/cbc:EndDate", nsmgr),
             };
 
-            if(!String.IsNullOrWhiteSpace(parentLineId))
+            if (!String.IsNullOrWhiteSpace(parentLineId))
             {
                 item.SetParentLineId(parentLineId);
             }
 
-            // Read ApplicableProductCharacteristic 
+            // Read ApplicableProductCharacteristic
             if (tradeLineItem.SelectNodes(".//cac:Item/cac:CommodityClassification", nsmgr) != null)
             {
                 foreach (XmlNode commodityClassification in tradeLineItem.SelectNodes(".//cac:Item/cac:CommodityClassification/cbc:ItemClassificationCode", nsmgr))
@@ -530,14 +531,14 @@ namespace s2industries.ZUGFeRD
                     DesignatedProductClassificationClassCodes listID = default(DesignatedProductClassificationClassCodes).FromString(XmlUtils.NodeAsString(commodityClassification, "./@listID", nsmgr));
                     item.AddDesignatedProductClassification(
                         listID,
-                        XmlUtils.NodeAsString(commodityClassification, "./@istVersionID", nsmgr),
+                        XmlUtils.NodeAsString(commodityClassification, "./@listVersionID", nsmgr),
                         commodityClassification.InnerText,
                         String.Empty // no name in Peppol Billing!
                         );
                 }
             }
 
-            // Read ApplicableProductCharacteristic 
+            // Read ApplicableProductCharacteristic
             if (tradeLineItem.SelectNodes(".//cac:Item/cac:AdditionalItemProperty", nsmgr) != null)
             {
                 foreach (XmlNode applicableProductCharacteristic in tradeLineItem.SelectNodes(".//cac:Item/cac:AdditionalItemProperty", nsmgr))
@@ -550,16 +551,16 @@ namespace s2industries.ZUGFeRD
                 }
             }
 
-			// Read BuyerOrderReferencedDocument
-			if (tradeLineItem.SelectSingleNode("cac:OrderLineReference", nsmgr) != null)
-			{
-				item.BuyerOrderReferencedDocument = new BuyerOrderReferencedDocument()
-				{
-					ID = XmlUtils.NodeAsString(tradeLineItem, ".//cbc:IssuerAssignedID", nsmgr),
-					IssueDateTime = XmlUtils.NodeAsDateTime(tradeLineItem, ".//cac:FormattedIssueDateTime/cbc:DateTimeString", nsmgr),
-					LineID = XmlUtils.NodeAsString(tradeLineItem, ".//cbc:LineID", nsmgr),
-				};
-			}
+            // Read BuyerOrderReferencedDocument
+            if (tradeLineItem.SelectSingleNode("cac:OrderLineReference", nsmgr) != null)
+            {
+                item.BuyerOrderReferencedDocument = new BuyerOrderReferencedDocument()
+                {
+                    ID = XmlUtils.NodeAsString(tradeLineItem, ".//cbc:IssuerAssignedID", nsmgr),
+                    IssueDateTime = XmlUtils.NodeAsDateTime(tradeLineItem, ".//cac:FormattedIssueDateTime/cbc:DateTimeString", nsmgr),
+                    LineID = XmlUtils.NodeAsString(tradeLineItem, ".//cbc:LineID", nsmgr),
+                };
+            }
 
             // Read AdditionalReferencedDocument
             foreach (XmlNode node in tradeLineItem.SelectNodes("//cac:DocumentReference", nsmgr))
@@ -625,7 +626,7 @@ namespace s2industries.ZUGFeRD
             //        break;
             //    }
             //  }
-            //}            
+            //}
 
             XmlNodeList noteNodes = tradeLineItem.SelectNodes(".//cbc:Note", nsmgr);
             foreach (XmlNode noteNode in noteNodes)
@@ -646,12 +647,14 @@ namespace s2industries.ZUGFeRD
                 decimal actualAmount = XmlUtils.NodeAsDecimal(appliedTradeAllowanceChargeNode, "./cbc:Amount", nsmgr, 0).Value;
                 string actualAmountCurrency = XmlUtils.NodeAsString(appliedTradeAllowanceChargeNode, "./cbc:Amount/@currencyID", nsmgr);
                 string reason = XmlUtils.NodeAsString(appliedTradeAllowanceChargeNode, "./cbc:AllowanceChargeReason", nsmgr);
+                string reasonCode = XmlUtils.NodeAsString(appliedTradeAllowanceChargeNode, "./cbc:AllowanceChargeReasonCode", nsmgr);
 
                 item.AddTradeAllowanceCharge(!chargeIndicator, // wichtig: das not (!) beachten
                                                 default(CurrencyCodes).FromString(basisAmountCurrency),
                                                 basisAmount,
                                                 actualAmount,
-                                                reason);
+                                                reason,
+                                                EnumExtensions.FromDescription<AllowanceReasonCodes>(reasonCode));
             }
 
             if (item.UnitCode == QuantityCodes.Unknown)
@@ -699,10 +702,10 @@ namespace s2industries.ZUGFeRD
             foreach (XmlNode subInvoiceLineNode in subInvoiceLineNodes)
             {
                 List<TradeLineItem> parseResultList = _parseTradeLineItem(subInvoiceLineNode, nsmgr, item.AssociatedDocument.LineID);
-                foreach(TradeLineItem resultItem in parseResultList)
+                foreach (TradeLineItem resultItem in parseResultList)
                 {
                     //Don't add nodes that are already in the resultList
-                    if(!resultList.Any(t => t.AssociatedDocument.LineID == resultItem.AssociatedDocument.LineID))
+                    if (!resultList.Any(t => t.AssociatedDocument.LineID == resultItem.AssociatedDocument.LineID))
                     {
                         resultList.Add(resultItem);
                     }
@@ -710,7 +713,7 @@ namespace s2industries.ZUGFeRD
             }
 
             return resultList;
-        } // !_parseTradeLineItem()        
+        } // !_parseTradeLineItem()
 
 
         private static LegalOrganization _nodeAsLegalOrganization(XmlNode baseNode, string xpath, XmlNamespaceManager nsmgr = null)

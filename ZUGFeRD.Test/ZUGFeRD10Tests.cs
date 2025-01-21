@@ -25,7 +25,7 @@ namespace s2industries.ZUGFeRD.Test
     [TestClass]
     public class ZUGFeRD10Tests : TestBase
     {
-        InvoiceProvider InvoiceProvider = new InvoiceProvider();
+        private InvoiceProvider _InvoiceProvider = new InvoiceProvider();
 
         [TestMethod]
         public void TestReferenceComfortInvoice()
@@ -60,7 +60,7 @@ namespace s2industries.ZUGFeRD.Test
         public void TestStoringInvoiceViaFile()
         {
             string path = "output.xml";
-            InvoiceDescriptor desc = this.InvoiceProvider.CreateInvoice();
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
             desc.Save(path, ZUGFeRDVersion.Version1, Profile.Comfort);
 
             InvoiceDescriptor desc2 = InvoiceDescriptor.Load(path);
@@ -71,7 +71,7 @@ namespace s2industries.ZUGFeRD.Test
         [TestMethod]
         public void TestStoringInvoiceViaStreams()
         {
-            InvoiceDescriptor desc = this.InvoiceProvider.CreateInvoice();
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
 
             string path = "output_stream.xml";
             FileStream saveStream = new FileStream(path, FileMode.Create);
@@ -107,5 +107,32 @@ namespace s2industries.ZUGFeRD.Test
             Assert.IsTrue(invoiceDescriptor.TradeLineItems.TrueForAll(x => x.BillingPeriodStart == null));
             Assert.IsTrue(invoiceDescriptor.TradeLineItems.TrueForAll(x => x.BillingPeriodEnd == null));
         } // !TestMissingPropertiesAreNull()
+
+
+        [TestMethod]
+        public void TestSpecifiedTradePaymentTermsDescription()
+        {
+            string path = @"..\..\..\..\demodata\zugferd10\ZUGFeRD_1p0_EXTENDED_Warenrechnung.xml";
+            path = _makeSurePathIsCrossPlatformCompatible(path);
+
+            InvoiceDescriptor desc = InvoiceDescriptor.Load(path);
+            Assert.IsNotNull(desc.GetTradePaymentTerms().First().Description);
+            Assert.AreEqual("Bei Zahlung innerhalb 14 Tagen gewähren wir 2,0% Skonto.", desc.GetTradePaymentTerms().First().Description);
+        } // !TestSpecifiedTradePaymentTermsDescription()
+
+
+        [TestMethod]
+        public void TestSpecifiedTradePaymentTermsCalculationPercent()
+        {
+            string path = @"..\..\..\..\demodata\zugferd10\ZUGFeRD_1p0_EXTENDED_Warenrechnung.xml";
+            path = _makeSurePathIsCrossPlatformCompatible(path);
+
+            InvoiceDescriptor desc = InvoiceDescriptor.Load(path);
+
+            var x = desc.GetTradePaymentTerms();
+
+            Assert.IsNotNull(desc.GetTradePaymentTerms().First().Percentage);
+            Assert.AreEqual(2m, desc.GetTradePaymentTerms().First().Percentage);
+        } // !TestSpecifiedTradePaymentTermsCalculationPercent()
     }
 }

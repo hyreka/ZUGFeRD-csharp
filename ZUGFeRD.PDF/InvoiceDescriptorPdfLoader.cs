@@ -33,8 +33,8 @@ namespace s2industries.ZUGFeRD.PDF
     {
         internal static async Task<InvoiceDescriptor> LoadAsync(Stream pdfStream)
         {
-            PdfDocument _pdfDocument = PdfReader.Open(pdfStream);
-            return await _LoadXmlAsync(_pdfDocument);
+            PdfDocument pdfDocument = PdfReader.Open(pdfStream);
+            return await _LoadXmlAsync(pdfDocument);
         } // !LoadAsync()
 
 
@@ -47,8 +47,8 @@ namespace s2industries.ZUGFeRD.PDF
 
             using (var pdfFile = File.OpenRead(pdfPath))
             {
-                PdfDocument _pdfDocument = PdfReader.Open(pdfFile);
-                return await _LoadXmlAsync(_pdfDocument);
+                PdfDocument pdfDocument = PdfReader.Open(pdfFile);
+                return await _LoadXmlAsync(pdfDocument);
             }
         } // !LoadAsync()
 
@@ -91,7 +91,7 @@ namespace s2industries.ZUGFeRD.PDF
 
         private static PdfStream _GetEmbeddedXmlStream(PdfDocument document, string xmlFileName = null)
         {
-            List<string> potentialFilenames = new List<string>() { "zugferd.xml", "factur-x.xml" };
+            List<string> potentialFilenames = new List<string>() { "zugferd.xml", "zugferd-invoice.xml", "factur-x.xml", "xrechnung.xml" };
             if (!String.IsNullOrWhiteSpace(xmlFileName))
             {
                 potentialFilenames.Add(xmlFileName);

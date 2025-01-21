@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * 
  *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,24 +18,11 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
-namespace s2industries.ZUGFeRD
+namespace s2industries.ZUGFeRD.PDF
 {
-    /// <summary>
-    ///  Structure for holding detailed information on Endpoint information for sender, businss partner and recipient
-    /// </summary>
-    public class ElectronicAddress
+    public class SaveFailedException : Exception
     {
-        /// <summary>
-        /// Endpoint address of the party
-        /// </summary>
-        public string Address { get; set; }
-
-        /// <summary>
-        /// Scheme identifier attribute
-        /// </summary>
-        public ElectronicAddressSchemeIdentifiers ElectronicAddressSchemeID { get; set; }
     }
 }

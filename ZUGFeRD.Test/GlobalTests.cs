@@ -27,13 +27,13 @@ namespace s2industries.ZUGFeRD.Test
     [TestClass]
     public class GlobalTests : TestBase
     {
-        InvoiceProvider InvoiceProvider = new InvoiceProvider();
+        private InvoiceProvider _InvoiceProvider = new InvoiceProvider();
 
 
         [TestMethod]
         public void TestAutomaticLineIds()
         {
-            InvoiceDescriptor desc = this.InvoiceProvider.CreateInvoice();
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
             desc.TradeLineItems.Clear();
 
             desc.AddTradeLineItem("Item1");
@@ -48,7 +48,7 @@ namespace s2industries.ZUGFeRD.Test
         [TestMethod]
         public void TestManualLineIds()
         {
-            InvoiceDescriptor desc = this.InvoiceProvider.CreateInvoice();
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
             desc.TradeLineItems.Clear();
             desc.AddTradeLineItem(lineID: "item-01", "Item1");
             desc.AddTradeLineItem(lineID: "item-02", "Item2");
@@ -61,32 +61,32 @@ namespace s2industries.ZUGFeRD.Test
         [TestMethod]
         public void TestCommentLine()
         {
-            string COMMENT = System.Guid.NewGuid().ToString();
-            string CUSTOM_LINE_ID = System.Guid.NewGuid().ToString();
+            string expectedComment = System.Guid.NewGuid().ToString();
+            string expectedCustomLineId = System.Guid.NewGuid().ToString();
 
             // test with automatic line id
-            InvoiceDescriptor desc = this.InvoiceProvider.CreateInvoice();
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
             int numberOfTradeLineItems = desc.TradeLineItems.Count;
-            desc.AddTradeLineCommentItem(COMMENT);
+            desc.AddTradeLineCommentItem(expectedComment);
 
             Assert.AreEqual(numberOfTradeLineItems + 1, desc.TradeLineItems.Count);
             Assert.IsNotNull(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument);
             Assert.IsNotNull(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.Notes);
             Assert.AreEqual(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.Notes.Count, 1);
-            Assert.AreEqual(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.Notes[0].Content, COMMENT);
+            Assert.AreEqual(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.Notes[0].Content, expectedComment);
 
 
             // test with manual line id
-            desc = this.InvoiceProvider.CreateInvoice();
+            desc = this._InvoiceProvider.CreateInvoice();
             numberOfTradeLineItems = desc.TradeLineItems.Count;
-            desc.AddTradeLineCommentItem(lineID: CUSTOM_LINE_ID, comment: COMMENT);
+            desc.AddTradeLineCommentItem(lineID: expectedCustomLineId, comment: expectedComment);
 
             Assert.AreEqual(numberOfTradeLineItems + 1, desc.TradeLineItems.Count);
             Assert.IsNotNull(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument);
-            Assert.IsNotNull(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.LineID, CUSTOM_LINE_ID);
+            Assert.IsNotNull(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.LineID, expectedCustomLineId);
             Assert.IsNotNull(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.Notes);
             Assert.AreEqual(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.Notes.Count, 1);
-            Assert.AreEqual(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.Notes[0].Content, COMMENT);
+            Assert.AreEqual(desc.TradeLineItems[desc.TradeLineItems.Count - 1].AssociatedDocument.Notes[0].Content, expectedComment);
         } // !TestCommentLine()
 
 
@@ -104,6 +104,10 @@ namespace s2industries.ZUGFeRD.Test
             path = @"..\..\..\..\demodata\zugferd21\zugferd_2p1_BASIC_Einfach-factur-x.xml";
             path = _makeSurePathIsCrossPlatformCompatible(path);
             Assert.AreEqual(InvoiceDescriptor.GetVersion(path), ZUGFeRDVersion.Version23);
+
+            path = @"..\..\..\..\demodata\xRechnung\ubl-cn-br-de-17-test-557-code-326.xml";
+            path = _makeSurePathIsCrossPlatformCompatible(path);
+            Assert.AreEqual(InvoiceDescriptor.GetVersion(path), ZUGFeRDVersion.Version23);
         } // !TestGetVersion()
 
 
@@ -117,7 +121,7 @@ namespace s2industries.ZUGFeRD.Test
         [DataRow(ZUGFeRDVersion.Version23, Profile.XRechnung1)]        
         public void UBLNonAvailability(ZUGFeRDVersion version, Profile profile)
         {
-            InvoiceDescriptor desc = this.InvoiceProvider.CreateInvoice();
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
             MemoryStream ms = new MemoryStream();
             Assert.ThrowsException<UnsupportedException>(() => desc.Save(ms, version, profile, ZUGFeRDFormats.UBL));
         } // !UBLNonAvailability()
@@ -126,7 +130,7 @@ namespace s2industries.ZUGFeRD.Test
         [TestMethod]        
         public void UBLAvailability()
         {
-            InvoiceDescriptor desc = this.InvoiceProvider.CreateInvoice();
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
             MemoryStream ms = new MemoryStream();
             desc.Save(ms, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.UBL);
         } // !UBLAvailability()

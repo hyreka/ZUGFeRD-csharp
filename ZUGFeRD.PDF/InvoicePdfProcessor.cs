@@ -48,15 +48,30 @@ namespace s2industries.ZUGFeRD.PDF
         } // !LoadFromPdfAsync()
 
 
-        public static async Task SaveToPdfAsync(Stream targetPdfStream, ZUGFeRDVersion version, Profile profile, ZUGFeRDFormats format, Stream pdfSourceStream, InvoiceDescriptor descriptor)
+        public static async Task SaveToPdfAsync(Stream targetPdfStream, ZUGFeRDVersion version, Profile profile, ZUGFeRDFormats format, Stream pdfSourceStream, InvoiceDescriptor descriptor, string password = null)
         {
-            await InvoiceDescriptorPdfSaver.SaveAsync(targetPdfStream, version, profile, format, pdfSourceStream, descriptor);
+            await InvoiceDescriptorPdfSaver.SaveAsync(targetPdfStream, version, profile, format, pdfSourceStream, descriptor, password);
         } // !SaveToPdfAsync()
 
 
-        public static async Task SaveToPdfAsync(string targetPdfPath, ZUGFeRDVersion version, Profile profile, ZUGFeRDFormats format, string pdfSourcePath, InvoiceDescriptor descriptor)
+        /// <summary>
+        /// Saves the invoice to a file.
+        ///
+        /// The invoice PDF is saved to the targetPath. The ZUGFeRD/ Factur-X or XRechnung invoice is embedded into the source PDF file.
+        /// 
+        /// Optionally, you can pass a password. This password is used for securing the output file.
+        /// </summary>
+        /// <param name="targetPdfPath"></param>
+        /// <param name="version"></param>
+        /// <param name="profile"></param>
+        /// <param name="format"></param>
+        /// <param name="pdfSourcePath"></param>
+        /// <param name="descriptor"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public static async Task SaveToPdfAsync(string targetPdfPath, ZUGFeRDVersion version, Profile profile, ZUGFeRDFormats format, string pdfSourcePath, InvoiceDescriptor descriptor, string password = null)
         {
-            await InvoiceDescriptorPdfSaver.SaveAsync(targetPdfPath, version, profile, format, pdfSourcePath, descriptor);
+            await InvoiceDescriptorPdfSaver.SaveAsync(targetPdfPath, version, profile, format, pdfSourcePath, descriptor, password);
         } // !SaveToPdfAsync()
     }
 }

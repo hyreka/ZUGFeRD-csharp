@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -30,14 +30,14 @@ namespace s2industries.ZUGFeRD
     {
         /// <summary>
         /// Invoice Number
-        /// 
+        ///
         /// BT-1
         /// </summary>
         public string InvoiceNo { get; set; }
 
         /// <summary>
         /// Invoice date
-        /// 
+        ///
         /// BT-2
         /// </summary>
         public DateTime? InvoiceDate { get; set; } = null;
@@ -53,13 +53,13 @@ namespace s2industries.ZUGFeRD
         public string OrderNo { get; set; } = string.Empty;
 
         /// <summary>
-        /// Order date 
+        /// Order date
         /// </summary>
         public DateTime? OrderDate { get; set; } = null;
 
         /// <summary>
         /// Details of an additional document reference
-        /// 
+        ///
         /// A new reference document is added by AddAdditionalReferenceDocument()
         /// </summary>
         public List<AdditionalReferencedDocument> AdditionalReferencedDocuments { get; internal set; } = new List<AdditionalReferencedDocument>();
@@ -81,7 +81,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Detailed information on the associated contract
-        /// 
+        ///
         /// BT-12
         /// </summary>
         public ContractReferencedDocument ContractReferencedDocument { get; set; }
@@ -97,20 +97,20 @@ namespace s2industries.ZUGFeRD
         public CurrencyCodes Currency { get; set; }
 
         /// <summary>
-        /// The VAT total amount expressed in the accounting currency accepted or 
-        /// required in the country of the seller. 
-        /// 
-        /// Note: Shall be used in combination with the invoice total VAT amount 
-        /// in accounting currency (BT-111), if the VAT accounting currency code 
-        /// differs from the invoice currency code. 
-        /// 
+        /// The VAT total amount expressed in the accounting currency accepted or
+        /// required in the country of the seller.
+        ///
+        /// Note: Shall be used in combination with the invoice total VAT amount
+        /// in accounting currency (BT-111), if the VAT accounting currency code
+        /// differs from the invoice currency code.
+        ///
         /// In normal invoicing scenarios, leave this property empty!
-        /// 
-        /// The lists of valid currencies are 
-        /// registered with the ISO 4217 Maintenance Agency „Codes for the 
-        /// representation of currencies and funds”. Please refer to Article 230 
+        ///
+        /// The lists of valid currencies are
+        /// registered with the ISO 4217 Maintenance Agency „Codes for the
+        /// representation of currencies and funds”. Please refer to Article 230
         /// of the Council Directive 2006/112/EC [2] for further information.
-        /// 
+        ///
         /// BT-6
         /// </summary>
         public CurrencyCodes? TaxCurrency { get; set; }
@@ -124,7 +124,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Buyer contact information
-        ///  
+        ///
         /// A group of business terms providing contact information relevant for the buyer.
         /// </summary>
         public Contact BuyerContact { get; set; }
@@ -151,7 +151,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Given seller reference number for routing purposes after biliteral agreement
-        /// 
+        ///
         /// This field seems not to be used in common scenarios.
         /// </summary>
         public string SellerReferenceNo { get; set; } = String.Empty;
@@ -163,7 +163,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// This party is optional and only relevant for Extended profile.
-        /// 
+        ///
         /// It seems to be used under rate condition only.
         /// </summary>
         public Party Invoicer { get; set; }
@@ -211,9 +211,9 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Representation of information that should be used for the document.
-        /// 
+        ///
         /// As the library can be used to both write ZUGFeRD files and read ZUGFeRD files, the profile serves two purposes:
-        /// It indicates the profile that was used to write the ZUGFeRD file that was loaded or the profile that is to be used when 
+        /// It indicates the profile that was used to write the ZUGFeRD file that was loaded or the profile that is to be used when
         /// the document is saved.
         /// </summary>
         public Profile Profile { get; internal set; } = Profile.Basic;
@@ -225,15 +225,15 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Indicates the type of the document, if it represents an invoice, a credit note or one of the available 'sub types'
-        /// 
+        ///
         /// BT-3
         /// </summary>
         public InvoiceType Type { get; set; } = InvoiceType.Invoice;
 
         /// <summary>
-        /// The identifier is defined by the buyer (e.g. contact ID, department, office ID, project code), but provided by the seller in the invoice. 
+        /// The identifier is defined by the buyer (e.g. contact ID, department, office ID, project code), but provided by the seller in the invoice.
         /// In France it needs to be filled with 999, if not available.
-        /// 
+        ///
         /// BT-10
         /// </summary>
         public string ReferenceOrderNo { get; set; }
@@ -250,21 +250,21 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Sum of all surcharges on document level in the invoice
-        /// 
+        ///
         /// Surcharges on line level are included in the invoice line net amount which is summed up into the sum of invoice line net amount.
         /// </summary>
         public decimal? ChargeTotalAmount { get; set; } = null;
 
         /// <summary>
         /// Sum of discounts on document level in the invoice
-        /// 
+        ///
         /// Discounts on line level are included in the invoice line net amount which is summed up into the sum of invoice line net amount.
         /// </summary>
         public decimal? AllowanceTotalAmount { get; set; } = null;
 
         /// <summary>
         /// The total amount of the invoice without VAT.
-        /// 
+        ///
         /// The invoice total amount without VAT is the sum of invoice line net amount minus sum of discounts on document level plus sum of surcharges on document level.
         /// </summary>
         public decimal? TaxBasisAmount { get; set; } = null;
@@ -272,8 +272,8 @@ namespace s2industries.ZUGFeRD
         /// <summary>
         /// The total VAT amount for the invoice.
         /// The VAT total amount expressed in the accounting currency accepted or required in the country of the seller
-        /// 
-        /// To be used when the VAT accounting currency (BT-6) differs from the Invoice currency code (BT-5) in accordance 
+        ///
+        /// To be used when the VAT accounting currency (BT-6) differs from the Invoice currency code (BT-5) in accordance
         /// with article 230 of Directive 2006/112 / EC on VAT. The VAT amount in accounting currency is not used
         /// in the calculation of the Invoice totals..
         /// </summary>
@@ -281,14 +281,14 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Invoice total amount with VAT
-        /// 
+        ///
         /// The invoice total amount with VAT is the invoice without VAT plus the invoice total VAT amount.
         /// </summary>
         public decimal? GrandTotalAmount { get; set; } = null;
 
         /// <summary>
         /// Sum of amount paid in advance
-        /// 
+        ///
         /// This amount is subtracted from the invoice total amount with VAT to calculate the amount due for payment.
         /// </summary>
         public decimal? TotalPrepaidAmount { get; set; } = null;
@@ -300,8 +300,8 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// The outstanding amount that is requested to be paid.
-        /// 
-        /// This amount is the invoice total amount with VAT minus the paid amount that has 
+        ///
+        /// This amount is the invoice total amount with VAT minus the paid amount that has
         /// been paid in advance. The amount is zero in case of a fully paid invoice.
         /// The amount may be negative; in that case the seller owes the amount to the buyer.
         /// </summary>
@@ -324,17 +324,17 @@ namespace s2industries.ZUGFeRD
         private List<TradeAllowanceCharge> _TradeAllowanceCharges { get; set; } = new List<TradeAllowanceCharge>();
 
         /// <summary>
-        /// Detailed information about payment terms               
+        /// Detailed information about payment terms
         /// </summary>
         /// <remarks>BT-20</remarks>
         private List<PaymentTerms> _PaymentTerms { get; set; } = new List<PaymentTerms>();
 
         /// <summary>
         /// A group of business terms providing information about a preceding invoices.
-        /// 
-        /// To be used in case: 
-        /// — a preceding invoice is corrected; 
-        /// — preceding partial invoices are referred to from a final invoice; 
+        ///
+        /// To be used in case:
+        /// — a preceding invoice is corrected;
+        /// — preceding partial invoices are referred to from a final invoice;
         /// — preceding pre-payment invoices are referred to from a final invoice.
         /// </summary>
         private List<InvoiceReferencedDocument> _InvoiceReferencedDocuments { get; set; } = new List<InvoiceReferencedDocument>();
@@ -346,7 +346,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Credit Transfer
-        /// 
+        ///
         /// A group of business terms to specify credit transfer payments
         /// </summary>
         public List<BankAccount> CreditorBankAccounts { get; set; } = new List<BankAccount>();
@@ -358,17 +358,17 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Payment instructions
-        /// 
-        /// /// If various accounts for credit transfers shall be transferred, the element 
-        /// SpecifiedTradeSettlementPaymentMeans can be repeated for each account. The code 
-        /// for the type of payment within the element typecode (BT-81) should therefore not 
+        ///
+        /// /// If various accounts for credit transfers shall be transferred, the element
+        /// SpecifiedTradeSettlementPaymentMeans can be repeated for each account. The code
+        /// for the type of payment within the element typecode (BT-81) should therefore not
         /// differ within the repetitions.
-        /// </summary> 
+        /// </summary>
         public PaymentMeans PaymentMeans { get; set; }
 
         /// <summary>
         /// Detailed information about the invoicing period, start date
-        /// </summary>   
+        /// </summary>
         public DateTime? BillingPeriodStart { get; set; }
 
         /// <summary>
@@ -386,7 +386,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Gets the ZUGFeRD version of a ZUGFeRD invoice that is passed via filename
-        /// 
+        ///
         /// </summary>
         /// <param name="filename">Stream where to read the ZUGFeRD invoice</param>
         /// <returns>ZUGFeRD version of the invoice that was passed to the function</returns>
@@ -425,7 +425,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Gets the ZUGFeRD version of a ZUGFeRD invoice that is passed via stream
-        /// 
+        ///
         /// </summary>
         /// <param name="stream">Stream where to read the ZUGFeRD invoice</param>
         /// <returns>ZUGFeRD version of the invoice that was passed to the function</returns>
@@ -461,11 +461,11 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Loads a ZUGFeRD invoice from a stream.
-        /// 
+        ///
         /// Please make sure that the stream is open, otherwise this call will raise an IllegalStreamException.
-        /// 
+        ///
         /// Important: the stream will not be closed by this function, make sure to close it by yourself!
-        /// 
+        ///
         /// </summary>
         /// <param name="stream">Stream where to read the ZUGFeRD invoice</param>
         /// <returns></returns>
@@ -503,7 +503,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Loads a ZUGFeRD invoice from a file.
-        /// 
+        ///
         /// Please make sure that the file is exists, otherwise this call will raise a FileNotFoundException.
         /// </summary>
         /// <param name="filename">Name of the ZUGFeRD invoice file</param>
@@ -570,11 +570,11 @@ namespace s2industries.ZUGFeRD
              */
 
             this.Notes.Add(new Note(note, subjectCode, contentCode));
-        } // !AddNote()        
+        } // !AddNote()
 
 
         public void SetBuyer(string name, string postcode, string city, string street, CountryCodes country, string id = null,
-                             GlobalID globalID = null, string receiver = "", LegalOrganization legalOrganization = null)
+                             GlobalID globalID = null, string receiver = "", LegalOrganization legalOrganization = null, string countrySubdivisonName = null, string addressLine3 = null)
         {
             this.Buyer = new Party()
             {
@@ -584,6 +584,8 @@ namespace s2industries.ZUGFeRD
                 ContactName = receiver,
                 City = city,
                 Street = street,
+                CountrySubdivisionName = countrySubdivisonName,
+                AddressLine3 = addressLine3,
                 Country = country,
                 GlobalID = globalID,
                 SpecifiedLegalOrganization = legalOrganization,
@@ -592,7 +594,7 @@ namespace s2industries.ZUGFeRD
 
 
         public void SetSeller(string name, string postcode, string city, string street, CountryCodes country, string id = null,
-                              GlobalID globalID = null, LegalOrganization legalOrganization = null, string description = null)
+                              GlobalID globalID = null, LegalOrganization legalOrganization = null, string description = null, string countrySubdivisonName = null, string addressLine3 = null)
         {
             this.Seller = new Party()
             {
@@ -601,6 +603,8 @@ namespace s2industries.ZUGFeRD
                 Postcode = postcode,
                 City = city,
                 Street = street,
+                CountrySubdivisionName = countrySubdivisonName,
+                AddressLine3 = addressLine3,
                 Country = country,
                 GlobalID = globalID,
                 SpecifiedLegalOrganization = legalOrganization,
@@ -700,15 +704,19 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Add an additional reference document
+        /// Note: LineID is only on line item-level
         /// </summary>
         /// <param name="id">Document number such as delivery note no or credit memo no</param>
         /// <param name="typeCode"></param>
-        /// <param name="issueDateTime">Document Date</param>        
+        /// <param name="issueDateTime">Document Date</param>
         /// <param name="name"></param>
         /// <param name="referenceTypeCode">Type of the referenced document</param>
         /// <param name="attachmentBinaryObject"></param>
         /// <param name="filename"></param>
-        public void AddAdditionalReferencedDocument(string id, AdditionalReferencedDocumentTypeCode typeCode, DateTime? issueDateTime = null, string name = null, ReferenceTypeCodes referenceTypeCode = ReferenceTypeCodes.Unknown, byte[] attachmentBinaryObject = null, string filename = null)
+        /// <param name="uriID"></param>
+        public void AddAdditionalReferencedDocument(string id, AdditionalReferencedDocumentTypeCode typeCode,
+            DateTime? issueDateTime = null, string name = null, ReferenceTypeCodes referenceTypeCode = ReferenceTypeCodes.Unknown,
+            byte[] attachmentBinaryObject = null, string filename = null, string uriID = null)
         {
             this.AdditionalReferencedDocuments.Add(new AdditionalReferencedDocument()
             {
@@ -718,7 +726,8 @@ namespace s2industries.ZUGFeRD
                 Name = name,
                 AttachmentBinaryObject = attachmentBinaryObject,
                 Filename = filename,
-                TypeCode = typeCode
+                TypeCode = typeCode,
+                URIID = uriID
             });
         } // !AddAdditionalReferencedDocument()
 
@@ -736,8 +745,8 @@ namespace s2industries.ZUGFeRD
         /// <summary>
         /// Sets detailed information about the corresponding despatch advice
         /// </summary>
-        /// <param name="deliveryNoteNo"></param>
-        /// <param name="deliveryNoteDate"></param>
+        /// <param name="despatchAdviceNo"></param>
+        /// <param name="despatchAdviceDate"></param>
         public void SetDespatchAdviceReferencedDocument(string despatchAdviceNo, DateTime? despatchAdviceDate = null)
         {
             this.DespatchAdviceReferencedDocument = new DespatchAdviceReferencedDocument()
@@ -780,9 +789,9 @@ namespace s2industries.ZUGFeRD
         /// The logistics service charge (ram:SpecifiedLogisticsServiceCharge) is part of the ZUGFeRD specification.
         /// Please note that it is not part of the XRechnung specification, thus, everything passed to this function will not
         /// be written when writing XRechnung format.
-        /// 
+        ///
         /// You might use AddTradeAllowanceCharge() instead.
-        /// </summary>        
+        /// </summary>
         public void AddLogisticsServiceCharge(decimal amount, string description, TaxTypes taxTypeCode, TaxCategoryCodes taxCategoryCode, decimal taxPercent)
         {
             this.ServiceCharges.Add(new ServiceCharge()
@@ -801,7 +810,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Adds an allowance or charge on document level.
-        /// 
+        ///
         /// Allowance represents a discount whereas charge represents a surcharge.
         /// </summary>
         /// <param name="isDiscount">Marks if the allowance charge is a discount. Please note that in contrary to this function, the xml file indicated a surcharge, not a discount (value will be inverted)</param>
@@ -809,15 +818,19 @@ namespace s2industries.ZUGFeRD
         /// <param name="currency">Curency of the allowance</param>
         /// <param name="actualAmount">Actual allowance charge amount</param>
         /// <param name="reason">Reason for the allowance</param>
+        /// <param name="reasonCode">Reason code for the allowance</param>
         /// <param name="taxTypeCode">VAT type code for document level allowance/ charge</param>
         /// <param name="taxCategoryCode">VAT type code for document level allowance/ charge</param>
         /// <param name="taxPercent">VAT rate for the allowance</param>
-        public void AddTradeAllowanceCharge(bool isDiscount, decimal? basisAmount, CurrencyCodes currency, decimal actualAmount, string reason, TaxTypes taxTypeCode, TaxCategoryCodes taxCategoryCode, decimal taxPercent)
+        public void AddTradeAllowanceCharge(bool isDiscount, decimal? basisAmount, CurrencyCodes currency, decimal actualAmount,
+                                            string reason, TaxTypes taxTypeCode, TaxCategoryCodes taxCategoryCode, decimal taxPercent,
+                                            AllowanceReasonCodes reasonCode = AllowanceReasonCodes.Unknown)
         {
             this._TradeAllowanceCharges.Add(new TradeAllowanceCharge()
             {
                 ChargeIndicator = !isDiscount,
                 Reason = reason,
+                ReasonCode = reasonCode,
                 BasisAmount = basisAmount,
                 ActualAmount = actualAmount,
                 Currency = currency,
@@ -835,7 +848,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Adds an allowance or charge on document level.
-        /// 
+        ///
         /// Allowance represents a discount whereas charge represents a surcharge.
         /// </summary>
         /// <param name="isDiscount">Marks if the allowance charge is a discount. Please note that in contrary to this function, the xml file indicated a surcharge, not a discount (value will be inverted)</param>
@@ -847,12 +860,14 @@ namespace s2industries.ZUGFeRD
         /// <param name="taxTypeCode">VAT type code for document level allowance/ charge</param>
         /// <param name="taxCategoryCode">VAT type code for document level allowance/ charge</param>
         /// <param name="taxPercent">VAT rate for the allowance</param>
-        public void AddTradeAllowanceCharge(bool isDiscount, decimal? basisAmount, CurrencyCodes currency, decimal actualAmount, decimal? chargePercentage, string reason, TaxTypes taxTypeCode, TaxCategoryCodes taxCategoryCode, decimal taxPercent)
+        /// <param name="reasonCode">Reason code for the allowance</param>
+        public void AddTradeAllowanceCharge(bool isDiscount, decimal? basisAmount, CurrencyCodes currency, decimal actualAmount, decimal? chargePercentage, string reason, TaxTypes taxTypeCode, TaxCategoryCodes taxCategoryCode, decimal taxPercent, AllowanceReasonCodes reasonCode = AllowanceReasonCodes.Unknown)
         {
             this._TradeAllowanceCharges.Add(new TradeAllowanceCharge()
             {
                 ChargeIndicator = !isDiscount,
                 Reason = reason,
+                ReasonCode = reasonCode,
                 BasisAmount = basisAmount,
                 ActualAmount = actualAmount,
                 Currency = currency,
@@ -887,9 +902,10 @@ namespace s2industries.ZUGFeRD
         /// <param name="dueDays"></param>
         /// <param name="percentage"></param>
         /// <param name="baseAmount"></param>
+        /// <param name="actualAmount"></param>
         public void AddTradePaymentTerms(string description, DateTime? dueDate = null,
             PaymentTermsType? paymentTermsType = null, int? dueDays = null,
-            decimal? percentage = null, decimal? baseAmount = null)
+            decimal? percentage = null, decimal? baseAmount = null, decimal? actualAmount = null)
         {
             _PaymentTerms.Add(new PaymentTerms()
             {
@@ -898,7 +914,8 @@ namespace s2industries.ZUGFeRD
                 PaymentTermsType = paymentTermsType,
                 DueDays = dueDays,
                 Percentage = percentage,
-                BaseAmount = baseAmount
+                BaseAmount = baseAmount,
+                ActualAmount = actualAmount
             });
         }
 
@@ -979,41 +996,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Add information about VAT and apply to the invoice line items for goods and services on the invoice.
-        /// 
-        /// This tax is added per VAT/ tax rate.
-        /// </summary>
-        /// <param name="basisAmount"></param>
-        /// <param name="percent">Tax rate where the tax belongs to</param>
-        /// <param name="typeCode"></param>
-        /// <param name="categoryCode"></param>
-        /// <param name="allowanceChargeBasisAmount"></param>
-        /// <param name="exemptionReasonCode"></param>
-        /// <param name="exemptionReason"></param>        
-        [Obsolete("Please note that TaxAmount needs to be written manually beginning with version 17.0. Please use the function that includes the taxAmount parameter")]
-        public void AddApplicableTradeTax(decimal basisAmount, decimal percent, TaxTypes typeCode, TaxCategoryCodes? categoryCode = null, decimal? allowanceChargeBasisAmount = null, TaxExemptionReasonCodes? exemptionReasonCode = null, string exemptionReason = null)
-        {
-            Tax tax = new Tax()
-            {
-                BasisAmount = basisAmount,
-                Percent = percent,
-                TypeCode = typeCode,
-                AllowanceChargeBasisAmount = allowanceChargeBasisAmount,
-                ExemptionReasonCode = exemptionReasonCode,
-                ExemptionReason = exemptionReason
-            };
-
-            if ((categoryCode != null) && (categoryCode.Value != TaxCategoryCodes.Unknown))
-            {
-                tax.CategoryCode = categoryCode;
-            }
-
-            this.Taxes.Add(tax);
-        } // !AddApplicableTradeTax()
-
-
-        /// <summary>
-        /// Add information about VAT and apply to the invoice line items for goods and services on the invoice.
-        /// 
+        ///
         /// This tax is added per VAT/ tax rate.
         /// </summary>
         /// <param name="basisAmount"></param>
@@ -1023,7 +1006,7 @@ namespace s2industries.ZUGFeRD
         /// <param name="categoryCode"></param>
         /// <param name="allowanceChargeBasisAmount"></param>
         /// <param name="exemptionReasonCode"></param>
-        /// <param name="exemptionReason"></param>        
+        /// <param name="exemptionReason"></param>
         /// <param name="lineTotalBasisAmount">A monetary value used as the line total basis on which this trade related tax, levy or duty is calculated</param>
         public void AddApplicableTradeTax(decimal basisAmount,
             decimal percent,
@@ -1074,7 +1057,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Saves the descriptor object into a stream.
-        /// 
+        ///
         /// The stream position will be reset to the original position after writing is finished.
         /// This allows easy further processing of the stream.
         /// </summary>
@@ -1091,7 +1074,7 @@ namespace s2industries.ZUGFeRD
 
 
         /// <summary>
-        /// Saves the descriptor object into a file with given name.        
+        /// Saves the descriptor object into a file with given name.
         /// </summary>
         /// <param name="filename">The filename where the data should be saved to.</param>
         /// <param name="version">The ZUGFeRD version you want to use. Defaults to version 1.</param>
@@ -1106,7 +1089,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Adds a new comment as a dedicated line of the invoice.
-        /// 
+        ///
         /// The line id is generated automatically
         /// </summary>
         /// <param name="comment"></param>
@@ -1120,7 +1103,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Adds a new comment as a dedicated line of the invoice.
-        /// 
+        ///
         /// The line id is passed as a parameter
         /// </summary>
         /// <param name="lineID"></param>
@@ -1175,7 +1158,7 @@ namespace s2industries.ZUGFeRD
 
         /// <summary>
         /// Adds a new line to the invoice. The line id is generated automatically.
-        /// 
+        ///
         /// Please note that this function returns the new trade line item object that you might use
         /// in your code to add more detailed information to the trade line item.
         /// </summary>
@@ -1196,7 +1179,8 @@ namespace s2industries.ZUGFeRD
         /// <param name="buyerAssignedID"></param>
         /// <param name="deliveryNoteID"></param>
         /// <param name="deliveryNoteDate"></param>
-        /// <param name="buyerOrderID"></param>
+        /// <param name="buyerOrderLineID"></param>
+        /// <param name="buyerOrderID">only Extended</param>
         /// <param name="buyerOrderDate"></param>
         /// <param name="billingPeriodStart"></param>
         /// <param name="billingPeriodEnd"></param>
@@ -1216,7 +1200,7 @@ namespace s2industries.ZUGFeRD
                                      GlobalID id = null,
                                      string sellerAssignedID = "", string buyerAssignedID = "",
                                      string deliveryNoteID = "", DateTime? deliveryNoteDate = null,
-                                     string buyerOrderID = "", DateTime? buyerOrderDate = null,
+                                     string buyerOrderLineID = "", string buyerOrderID = "", DateTime? buyerOrderDate = null,
                                      DateTime? billingPeriodStart = null, DateTime? billingPeriodEnd = null)
         {
             return AddTradeLineItem(lineID: _getNextLineId(),
@@ -1237,7 +1221,8 @@ namespace s2industries.ZUGFeRD
                              buyerAssignedID: buyerAssignedID,
                              deliveryNoteID: deliveryNoteID,
                              deliveryNoteDate: deliveryNoteDate,
-                             buyerOrderID: buyerOrderID,
+                             buyerOrderLineID: buyerOrderLineID,
+                             buyerOrderID: buyerOrderID, // Extended!
                              buyerOrderDate: buyerOrderDate,
                              billingPeriodStart: billingPeriodStart,
                              billingPeriodEnd: billingPeriodEnd);
@@ -1264,7 +1249,7 @@ namespace s2industries.ZUGFeRD
                                      GlobalID id = null,
                                      string sellerAssignedID = "", string buyerAssignedID = "",
                                      string deliveryNoteID = "", DateTime? deliveryNoteDate = null,
-                                     string buyerOrderID = "", DateTime? buyerOrderDate = null,
+                                     string buyerOrderLineID = "", string buyerOrderID = "", DateTime? buyerOrderDate = null,
                                      DateTime? billingPeriodStart = null, DateTime? billingPeriodEnd = null)
         {
             if (String.IsNullOrWhiteSpace(lineID))
@@ -1309,9 +1294,9 @@ namespace s2industries.ZUGFeRD
                 newItem.SetDeliveryNoteReferencedDocument(deliveryNoteID, deliveryNoteDate);
             }
 
-            if (!String.IsNullOrWhiteSpace(buyerOrderID) || buyerOrderDate.HasValue)
+            if (!String.IsNullOrWhiteSpace(buyerOrderLineID) || buyerOrderDate.HasValue || !String.IsNullOrWhiteSpace(buyerOrderID))
             {
-                newItem.SetOrderReferencedDocument(buyerOrderID, buyerOrderDate);
+                newItem.SetOrderReferencedDocument(buyerOrderID, buyerOrderDate, buyerOrderLineID);
             }
 
             this.TradeLineItems.Add(newItem);
@@ -1319,6 +1304,13 @@ namespace s2industries.ZUGFeRD
         } // !AddTradeLineItem()
 
 
+        /// <summary>
+        /// Sets up the payment means.
+        /// </summary>
+        /// <param name="paymentCode">Payment means type code.</param>
+        /// <param name="information">Additional information.</param>
+        /// <param name="identifikationsnummer">SEPA creditor identifier.</param>
+        /// <param name="mandatsnummer">SEPA mandate reference.</param>
         public void SetPaymentMeans(PaymentMeansTypeCodes paymentCode, string information = "", string identifikationsnummer = null, string mandatsnummer = null)
         {
             this.PaymentMeans = new PaymentMeans
@@ -1332,7 +1324,7 @@ namespace s2industries.ZUGFeRD
 
 
         /// <summary>
-        ///     Sets up the payment means for SEPA direct debit.
+        /// Sets up the payment means for SEPA direct debit.
         /// </summary>
         public void SetPaymentMeansSepaDirectDebit(string sepaCreditorIdentifier, string sepaMandateReference, string information = "")
         {

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -26,7 +26,7 @@ namespace s2industries.ZUGFeRD.Test
     [TestClass]
     public class ZUGFeRD20Tests : TestBase
     {
-        InvoiceProvider InvoiceProvider = new InvoiceProvider();
+        private InvoiceProvider _InvoiceProvider = new InvoiceProvider();
 
         [TestMethod]
         public void TestLineStatusCode()
@@ -152,7 +152,7 @@ namespace s2industries.ZUGFeRD.Test
             msBasic.Seek(0, SeekOrigin.Begin);
 
             loadedInvoice = InvoiceDescriptor.Load(msBasic);
-            Assert.AreEqual(loadedInvoice.RoundingAmount, 0m);
+            Assert.IsNull(loadedInvoice.RoundingAmount);
         } // !TestTotalRounding()
 
 
@@ -195,7 +195,7 @@ namespace s2industries.ZUGFeRD.Test
             Assert.AreEqual(1, invoiceDescriptor.DebitorBankAccounts.Count);
             Assert.AreEqual("DE21860000000086001055", invoiceDescriptor.DebitorBankAccounts[0].IBAN);
 
-            Assert.AreEqual("Der Betrag in Höhe von EUR 529,87 wird am 20.03.2018 von Ihrem Konto per SEPA-Lastschrift eingezogen.", 
+            Assert.AreEqual("Der Betrag in Höhe von EUR 529,87 wird am 20.03.2018 von Ihrem Konto per SEPA-Lastschrift eingezogen.",
                 invoiceDescriptor.GetTradePaymentTerms().FirstOrDefault().Description.Trim());
         } // !TestLoadingSepaPreNotification()
 
@@ -219,7 +219,8 @@ namespace s2industries.ZUGFeRD.Test
                 grossUnitPrice: 9.9m,
                 categoryCode: TaxCategoryCodes.S,
                 taxPercent: 19.0m,
-                taxType: TaxTypes.VAT);
+                taxType: TaxTypes.VAT,
+                buyerOrderLineID: "1");
             d.AddTradeLineItem(
                 lineID: "2",
                 id: new GlobalID(GlobalIDSchemeIdentifiers.EAN, "4000050986428"),
@@ -279,11 +280,13 @@ namespace s2industries.ZUGFeRD.Test
             d.AddApplicableTradeTax(
                 275.00m,
                 7.00m,
+                275.00m / 100m * 7.00m,
                 TaxTypes.VAT,
                 TaxCategoryCodes.S);
             d.AddApplicableTradeTax(
                 198.00m,
                 19.00m,
+                198.00m / 100m * 19.00m,
                 TaxTypes.VAT,
                 TaxCategoryCodes.S);
 
@@ -466,7 +469,7 @@ namespace s2industries.ZUGFeRD.Test
         [TestMethod]
         public void TestWriteAndReadBusinessProcess()
         {
-            InvoiceDescriptor desc = this.InvoiceProvider.CreateInvoice();
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
             desc.BusinessProcess = "A1";
 
             MemoryStream ms = new MemoryStream();
@@ -483,7 +486,7 @@ namespace s2industries.ZUGFeRD.Test
         [TestMethod]
         public void TestWriteAndReadExtended()
         {
-            InvoiceDescriptor desc = this.InvoiceProvider.CreateInvoice();
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
             string filename2 = "myrandomdata.bin";
             DateTime timestamp = DateTime.Now.Date;
             byte[] data = new byte[32768];
@@ -562,7 +565,7 @@ namespace s2industries.ZUGFeRD.Test
             desc.BillingPeriodStart = timestamp;
             desc.BillingPeriodEnd = timestamp.AddDays(14);
 
-            desc.AddTradeAllowanceCharge(false, 5m, CurrencyCodes.EUR, 15m, "Reason for charge", TaxTypes.AAB, TaxCategoryCodes.AB, 19m);
+            desc.AddTradeAllowanceCharge(false, 5m, CurrencyCodes.EUR, 15m, "Reason for charge", TaxTypes.AAB, TaxCategoryCodes.AB, 19m, AllowanceReasonCodes.Packaging);
             desc.AddLogisticsServiceCharge(10m, "Logistics service charge", TaxTypes.AAC, TaxCategoryCodes.AC, 7m);
 
             desc.GetTradePaymentTerms().FirstOrDefault().DueDate = timestamp.AddDays(14);
@@ -574,7 +577,7 @@ namespace s2industries.ZUGFeRD.Test
             Assert.IsNotNull(lineItem);
             lineItem.Description = "This is line item TB100A4";
             lineItem.BuyerAssignedID = "0815";
-            lineItem.SetOrderReferencedDocument("12345", timestamp);
+            lineItem.SetOrderReferencedDocument("12345", timestamp, "1");
             lineItem.SetDeliveryNoteReferencedDocument("12345", timestamp);
             lineItem.SetContractReferencedDocument("12345", timestamp);
 
@@ -593,7 +596,7 @@ namespace s2industries.ZUGFeRD.Test
             lineItem.BillingPeriodEnd = timestamp.AddDays(10);
 
             lineItem.AddReceivableSpecifiedTradeAccountingAccount("987654");
-            lineItem.AddTradeAllowanceCharge(false, CurrencyCodes.EUR, 10m, 50m, "Reason: UnitTest");
+            lineItem.AddTradeAllowanceCharge(false, CurrencyCodes.EUR, 10m, 50m, "Reason: UnitTest", AllowanceReasonCodes.Packaging);
 
 
             MemoryStream ms = new MemoryStream();
@@ -781,6 +784,7 @@ namespace s2industries.ZUGFeRD.Test
             Assert.AreEqual(TaxCategoryCodes.S, loadedLineItem.TaxCategoryCode);
             Assert.AreEqual(19m, loadedLineItem.TaxPercent);
 
+            Assert.AreEqual("1", loadedLineItem.BuyerOrderReferencedDocument.LineID);
             Assert.AreEqual("12345", loadedLineItem.BuyerOrderReferencedDocument.ID);
             Assert.AreEqual(timestamp, loadedLineItem.BuyerOrderReferencedDocument.IssueDateTime);
             Assert.AreEqual("12345", loadedLineItem.DeliveryNoteReferencedDocument.ID);

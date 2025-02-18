@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 using System;
 using System.ComponentModel;
 using System.Reflection;
@@ -28,7 +27,30 @@ namespace s2industries.ZUGFeRD
     {
         internal static string EnumToString<T>(this T value) where T : Enum
         {
+            // eventually use attribute value
+            FieldInfo field = value.GetType().GetField(value.ToString());
+            if (field != null)
+            {
+                // Prüft, ob das EnumStringValueAttribute gesetzt ist
+                var attribute = field.GetCustomAttribute<EnumStringValueAttribute>();
+                if (attribute != null)
+                {
+                    return attribute.Value;
+                }
+            }
+
             return value.ToString("g");
+        } // !EnumToString()
+
+
+        internal static string EnumToString<T>(this T? value) where T : struct, Enum
+        {
+            if (!value.HasValue)
+            {
+                return String.Empty;
+            }
+
+            return EnumToString(value.Value);
         } // !EnumToString()
 
 
@@ -44,18 +66,47 @@ namespace s2industries.ZUGFeRD
             }
         } // !IntToEnum()
 
-
-        internal static T StringToEnum<T>(this string value) where T : Enum
+        internal static T StringToEnum<T>(this string value) where T : struct, Enum
         {
-            try
+            T? result = StringToNullableEnum<T>(value);
+            if (result.HasValue)
             {
-                return (T)Enum.Parse(typeof(T), value);
+                return result.Value;
             }
-            catch
+            else
             {
                 return default;
             }
-        } // !IntToEnum()
+        } // !StringToEnum()
+
+
+        internal static T? StringToNullableEnum<T>(this string value) where T : struct, Enum
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+
+            // find out if we have custom mapping
+            foreach (var field in typeof(T).GetFields())
+            {
+                var attribute = field.GetCustomAttribute<EnumStringValueAttribute>();
+                if (attribute != null && attribute.Value.Equals(value, StringComparison.OrdinalIgnoreCase))
+                {
+                    return (T)field.GetValue(null);
+                }
+            }
+
+            // use default behavior if we have no custom mapping
+            if (Enum.TryParse(value, true, out T result))
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
+        } // !StringToNullableEnum()
 
 
         internal static int EnumToInt<T>(this T value) where T : Enum

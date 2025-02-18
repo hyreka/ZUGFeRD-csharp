@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,21 +53,21 @@ namespace s2industries.ZUGFeRD
         /// </summary>
         C62,
 
-		/// <summary>
-		/// centigram; Zentigramm
-		/// </summary>
-		CGM,
+        /// <summary>
+        /// centigram; Zentigramm
+        /// </summary>
+        CGM,
 
-		/// <summary>
+        /// <summary>
         /// hundred leave; 100 Blätter
         /// A unit of count defining the number of leaves, expressed in units of one hundred leaves.
-		/// </summary>
-		CLF,
+        /// </summary>
+        CLF,
 
         /// <summary>
         /// centilitre
         /// </summary>
-		CLT,
+        CLT,
 
         /// <summary>
         /// square centimetre
@@ -304,7 +305,7 @@ namespace s2industries.ZUGFeRD
         /// A unit of count defining the number of pairs (pair: item described by two's).
         ///
         /// Previously, NPR was used to indicate pairs. This has been removed.
-        /// </remarks>
+        /// </remarks>        
         PR,
 
         /// <summary>
@@ -384,6 +385,12 @@ namespace s2industries.ZUGFeRD
         /// Abkürzung: Stg
         /// </summary>
         XRD,
+
+        /// <summary>
+        /// Kiste oder ein Gestell, das mehrere Flaschen sicher hält
+        /// Bottlecrate / bottlerack
+        /// </summary>
+        XBC,
 
         /// <summary>
         /// Tafel/Board
@@ -524,6 +531,12 @@ namespace s2industries.ZUGFeRD
         XBK,
 
         /// <summary>
+        /// Matte
+        /// Mat
+        /// </summary>
+        XMT,
+
+        /// <summary>
         /// Zentner
         /// decitonne
         /// </summary>
@@ -547,12 +560,14 @@ namespace s2industries.ZUGFeRD
         /// microlitre
         /// Abkürzung: µl
         /// </summary>
+        [EnumStringValue("4G")]
         _4G,
 
         /// <summary>
         /// megabecquerel
         /// Abkürzung: MBq
         /// </summary>
+        [EnumStringValue("4N")]
         _4N,
 
         /// <summary>
@@ -614,7 +629,12 @@ namespace s2industries.ZUGFeRD
         /// <remarks>
         /// Services offered with no time frame specified
         /// </remarks>
-        E48
+        E48,
+
+        /// <summary>
+        /// Mutually Defined
+        /// </summary>
+        ZZ,
     }
 
 
@@ -622,49 +642,38 @@ namespace s2industries.ZUGFeRD
     {
         public static QuantityCodes FromString(this QuantityCodes _, string s)
         {
-            try
+            if (!string.IsNullOrWhiteSpace(s) && char.IsDigit(s[0]))
             {
-                if (!string.IsNullOrWhiteSpace(s) && char.IsDigit(s[0]))
-                {
-                    return (QuantityCodes)Enum.Parse(typeof(QuantityCodes), "_" + s);
-                }
-                else
-                {
-                    return (QuantityCodes)Enum.Parse(typeof(QuantityCodes), s);
-                }
+                s = "_" + s;
             }
-            catch
-            {
-                // mapping of legacy unit codes
-                if (s == "NPR")
-                {
-                    return QuantityCodes.PR;
-                }
-                else if (s == "PCE")
-                {
-                    return QuantityCodes.C62;
-                }
-                else if (s == "KTM")
-                {
-                    return QuantityCodes.KMT;
-                }
-                else if (s == "HAR")
-                {
-                    return QuantityCodes.H18;
-                }
-                else if (s == "D64")
-                {
-                    return QuantityCodes.XOK;
-                }
 
-                return QuantityCodes.Unknown;
+            if (Enum.TryParse(s, true, out QuantityCodes result))
+            {
+                return result;
+            }
+
+            // mapping of legacy unit codes
+            switch (s)
+            {
+                case "NPR":
+                    return QuantityCodes.PR;
+                case "PCE":
+                    return QuantityCodes.C62;
+                case "KTM":
+                    return QuantityCodes.KMT;
+                case "HAR":
+                    return QuantityCodes.H18;
+                case "D64":
+                    return QuantityCodes.XOK;
+                default:
+                    return QuantityCodes.Unknown;
             }
         } // !FromString()
 
 
         public static string EnumToString(this QuantityCodes c)
         {
-            return c.ToString("g").Replace("_","");
+            return c == QuantityCodes.Unknown ? "ZZ" : c.ToString("g").Replace("_", "");
         } // !ToString()
     }
 }

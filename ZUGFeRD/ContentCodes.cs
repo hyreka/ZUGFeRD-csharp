@@ -29,6 +29,11 @@ namespace s2industries.ZUGFeRD
     public enum ContentCodes
     {
         /// <summary>
+        /// Unbekannter Wert
+        /// </summary>
+        Unknown,
+
+        /// <summary>
         ///  Die Ware bleibt bis zur vollständigen Bezahlung
         ///  unser Eigentum. 
         /// </summary>
@@ -62,34 +67,6 @@ namespace s2industries.ZUGFeRD
         /// <summary>
         /// Es bestehen Rabatt- oder Bonusvereinbarungen.
         /// </summary>
-        ST3,
-
-        /// <summary>
-        /// Unbekannter Wert
-        /// </summary>
-        Unknown
-    }
-
-
-
-    internal static class ContentCodesExtensions
-    {
-        public static ContentCodes FromString(this ContentCodes _, string s)
-        {
-            try
-            {
-                return (ContentCodes)Enum.Parse(typeof(ContentCodes), s);
-            }
-            catch
-            {
-                return ContentCodes.Unknown;
-            }
-        } // !FromString()
-
-
-        public static string EnumToString(this ContentCodes c)
-        {
-            return c.ToString("g");
-        } // !EnumToString()
+        ST3        
     }
 }

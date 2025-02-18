@@ -51,21 +51,4 @@ namespace s2industries.ZUGFeRD
         /// </summary>
         INFORMATION
     }
-
-    internal static class LineStatusReasonCodesExtensions
-    {
-        public static LineStatusReasonCodes? FromString(this LineStatusReasonCodes _, string s)
-        {
-            if (s == null)
-            {
-                return null;
-            }
-            return EnumExtensions.StringToEnum<LineStatusReasonCodes>(s);
-        } // !FromString()
-
-        public static string EnumToString(this LineStatusReasonCodes c)
-        {
-            return EnumExtensions.EnumToString<LineStatusReasonCodes>(c);
-        } // !ToString()
-    }
 }

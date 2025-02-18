@@ -578,8 +578,8 @@ namespace s2industries.ZUGFeRD.Test
             lineItem.Description = "This is line item TB100A4";
             lineItem.BuyerAssignedID = "0815";
             lineItem.SetOrderReferencedDocument("12345", timestamp, "1");
-            lineItem.SetDeliveryNoteReferencedDocument("12345", timestamp);
-            lineItem.SetContractReferencedDocument("12345", timestamp);
+            lineItem.SetDeliveryNoteReferencedDocument("12345", timestamp, "1");
+            lineItem.SetContractReferencedDocument("12345", timestamp, "1");
 
             lineItem.AddAdditionalReferencedDocument("xyz", AdditionalReferencedDocumentTypeCode.ReferenceDocument, ReferenceTypeCodes.AAB, timestamp);
 
@@ -787,8 +787,10 @@ namespace s2industries.ZUGFeRD.Test
             Assert.AreEqual("1", loadedLineItem.BuyerOrderReferencedDocument.LineID);
             Assert.AreEqual("12345", loadedLineItem.BuyerOrderReferencedDocument.ID);
             Assert.AreEqual(timestamp, loadedLineItem.BuyerOrderReferencedDocument.IssueDateTime);
+            Assert.AreEqual("1", loadedLineItem.DeliveryNoteReferencedDocument.LineID);
             Assert.AreEqual("12345", loadedLineItem.DeliveryNoteReferencedDocument.ID);
             Assert.AreEqual(timestamp, loadedLineItem.DeliveryNoteReferencedDocument.IssueDateTime);
+            Assert.AreEqual("1", loadedLineItem.ContractReferencedDocument.LineID);
             Assert.AreEqual("12345", loadedLineItem.ContractReferencedDocument.ID);
             Assert.AreEqual(timestamp, loadedLineItem.ContractReferencedDocument.IssueDateTime);
 
@@ -822,5 +824,50 @@ namespace s2industries.ZUGFeRD.Test
             Assert.AreEqual(50m, lineItemTradeAllowanceCharge.ActualAmount);
             Assert.AreEqual("Reason: UnitTest", lineItemTradeAllowanceCharge.Reason);
         }
+
+        [TestMethod]
+        public void TestApplicableTradeDeliveryTermsExists()
+        {
+            string uuid = System.Guid.NewGuid().ToString();
+            DateTime issueDateTime = DateTime.Today;
+
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
+            desc.ApplicableTradeDeliveryTermsCode = TradeDeliveryTermCodes.CFR;
+
+            MemoryStream ms = new MemoryStream();
+            desc.Save(ms, ZUGFeRDVersion.Version23, Profile.Extended);
+
+            ms.Seek(0, SeekOrigin.Begin);
+            StreamReader reader = new StreamReader(ms);
+            string text = reader.ReadToEnd();
+
+            ms.Seek(0, SeekOrigin.Begin);
+            InvoiceDescriptor loadedInvoice = InvoiceDescriptor.Load(ms);
+
+            Assert.AreEqual(Profile.Extended, loadedInvoice.Profile);
+            Assert.AreEqual(loadedInvoice.ApplicableTradeDeliveryTermsCode, TradeDeliveryTermCodes.CFR);
+        } // !TestSellerOrderReferencedDocument()
+
+        [TestMethod]
+        public void TestApplicableTradeDeliveryTermsIsNull()
+        {
+            string uuid = System.Guid.NewGuid().ToString();
+            DateTime issueDateTime = DateTime.Today;
+
+            InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
+
+            MemoryStream ms = new MemoryStream();
+            desc.Save(ms, ZUGFeRDVersion.Version23, Profile.Extended);
+
+            ms.Seek(0, SeekOrigin.Begin);
+            StreamReader reader = new StreamReader(ms);
+            string text = reader.ReadToEnd();
+
+            ms.Seek(0, SeekOrigin.Begin);
+            InvoiceDescriptor loadedInvoice = InvoiceDescriptor.Load(ms);
+
+            Assert.AreEqual(Profile.Extended, loadedInvoice.Profile);
+            Assert.IsNull(loadedInvoice.ApplicableTradeDeliveryTermsCode);
+        } // !TestSellerOrderReferencedDocument()
     }
 }

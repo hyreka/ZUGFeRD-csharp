@@ -200,16 +200,16 @@ namespace s2industries.ZUGFeRD
                     Writer.WriteStartElement("cac", "AdditionalDocumentReference");
                     Writer.WriteStartElement("cbc", "ID"); // BT-18, BT-22
 
-                    if (document.ReferenceTypeCode != ReferenceTypeCodes.Unknown)
+                    if (document.ReferenceTypeCode.HasValue)
                     {
-                        Writer.WriteAttributeString("schemeID", document.ReferenceTypeCode.EnumToString()); // BT-18-1
+                        Writer.WriteAttributeString("schemeID", document.ReferenceTypeCode.Value.EnumToString()); // BT-18-1
                     }
 
                     Writer.WriteValue(document.ID);
                     Writer.WriteEndElement(); // !cbc:ID
-                    if (document.TypeCode != AdditionalReferencedDocumentTypeCode.Unknown)
+                    if (document.TypeCode.HasValue)
                     {
-                        Writer.WriteElementString("cbc", "DocumentTypeCode", document.TypeCode.EnumValueToString());
+                        Writer.WriteElementString("cbc", "DocumentTypeCode", EnumExtensions.EnumToString<AdditionalReferencedDocumentTypeCode>(document.TypeCode.Value));
                     }
                     Writer.WriteOptionalElementString("cbc", "DocumentDescription", document.Name); // BT-123
 
@@ -312,7 +312,7 @@ namespace s2industries.ZUGFeRD
             }
 
             // PaymentMeans
-            if (this.Descriptor.CreditorBankAccounts.Count == 0 && this.Descriptor.DebitorBankAccounts.Count == 0)
+            if (!this.Descriptor.AnyCreditorFinancialAccount() && !this.Descriptor.AnyDebitorFinancialAccount())
             {
                 if (this.Descriptor.PaymentMeans != null)
                 {
@@ -336,7 +336,7 @@ namespace s2industries.ZUGFeRD
             }
             else
             {
-                foreach (BankAccount account in this.Descriptor.CreditorBankAccounts)
+                foreach (BankAccount account in this.Descriptor.GetCreditorFinancialAccounts())
                 {
                     Writer.WriteStartElement("cac", "PaymentMeans", Profile.BasicWL | Profile.Basic | Profile.Comfort | Profile.Extended | Profile.XRechnung1 | Profile.XRechnung);
 
@@ -378,7 +378,7 @@ namespace s2industries.ZUGFeRD
                 }
 
                 //[BR - 67] - An Invoice shall contain maximum one Payment Mandate(BG - 19).
-                foreach (BankAccount account in this.Descriptor.DebitorBankAccounts)
+                foreach (BankAccount account in this.Descriptor.GetDebitorFinancialAccounts())
                 {
                     Writer.WriteStartElement("cac", "PaymentMeans", Profile.BasicWL | Profile.Basic | Profile.Comfort | Profile.Extended | Profile.XRechnung1 | Profile.XRechnung);
 
@@ -462,6 +462,13 @@ namespace s2industries.ZUGFeRD
                     Writer.WriteEndElement();
                 }
 
+                if (tradeAllowanceCharge.ChargePercentage.HasValue && tradeAllowanceCharge.BasisAmount != null)
+                {
+                    Writer.WriteStartElement("cbc", "MultiplierFactorNumeric"); 
+                    Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.ChargePercentage.Value, 2));
+                    Writer.WriteEndElement();
+                }
+
                 Writer.WriteStartElement("cbc", "Amount"); // BT-92 / BT-99
                 Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
                 Writer.WriteValue(_formatDecimal(tradeAllowanceCharge.ActualAmount));
@@ -491,12 +498,12 @@ namespace s2industries.ZUGFeRD
             #endregion
 
             // Tax Total
-            if ((this.Descriptor.Taxes?.Any() == true) && (this.Descriptor.TaxTotalAmount != null))
+            if (this.Descriptor.AnyApplicableTradeTaxes() && (this.Descriptor.TaxTotalAmount != null))
             {
                 Writer.WriteStartElement("cac", "TaxTotal");
                 _writeOptionalAmount(Writer, "cbc", "TaxAmount", this.Descriptor.TaxTotalAmount, forceCurrency: true);
 
-                foreach (Tax tax in this.Descriptor.Taxes)
+                foreach (Tax tax in this.Descriptor.GetApplicableTradeTaxes())
                 {
                     Writer.WriteStartElement("cac", "TaxSubtotal");
                     _writeOptionalAmount(Writer, "cbc", "TaxableAmount", tax.BasisAmount, forceCurrency: true);
@@ -535,7 +542,7 @@ namespace s2industries.ZUGFeRD
             Writer.WriteEndElement(); //!LegalMonetaryTotal
 
 
-            foreach (TradeLineItem tradeLineItem in this.Descriptor.TradeLineItems)
+            foreach (TradeLineItem tradeLineItem in this.Descriptor.GetTradeLineItems())
             {
                 //Skip items with parent line id because these are written recursively in the _WriteTradeLineItem method
                 if (String.IsNullOrEmpty(tradeLineItem.AssociatedDocument.ParentLineID))
@@ -578,18 +585,23 @@ namespace s2industries.ZUGFeRD
             }
             Writer.WriteElementString("cbc", "ID", tradeLineItem.AssociatedDocument.LineID);
 
-            //Writer.WriteElementString("cbc", "InvoicedQuantity", tradeLineItem.BilledQuantity.ToString());
-            Writer.WriteStartElement("cbc", "InvoicedQuantity");
+
+            if (isInvoice)
+            {
+                Writer.WriteStartElement("cbc", "InvoicedQuantity");
+            }
+            else
+            {
+                Writer.WriteStartElement("cbc", "CreditedQuantity");
+            }
             Writer.WriteAttributeString("unitCode", tradeLineItem.UnitCode.EnumToString());
             Writer.WriteValue(_formatDecimal(tradeLineItem.BilledQuantity));
-            Writer.WriteEndElement();
-
-
-            //Writer.WriteElementString("cbc", "LineExtensionAmount", tradeLineItem.LineTotalAmount.ToString());
+            Writer.WriteEndElement(); // !InvoicedQuantity || CreditedQuantity
+            
             Writer.WriteStartElement("cbc", "LineExtensionAmount");
             Writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
             Writer.WriteValue(_formatDecimal(tradeLineItem.LineTotalAmount));
-            Writer.WriteEndElement();
+            Writer.WriteEndElement(); // !LineExtensionAmount
 
             if (tradeLineItem._AdditionalReferencedDocuments.Count > 0)
             {
@@ -598,16 +610,16 @@ namespace s2industries.ZUGFeRD
                     Writer.WriteStartElement("cac", "DocumentReference");
                     Writer.WriteStartElement("cbc", "ID"); // BT-18, BT-22
 
-                    if (document.ReferenceTypeCode != ReferenceTypeCodes.Unknown)
+                    if (document.ReferenceTypeCode.HasValue)
                     {
-                        Writer.WriteAttributeString("schemeID", document.ReferenceTypeCode.EnumToString()); // BT-18-1
+                        Writer.WriteAttributeString("schemeID", document.ReferenceTypeCode.Value.EnumToString()); // BT-18-1
                     }
 
                     Writer.WriteValue(document.ID);
                     Writer.WriteEndElement(); // !cbc:ID
-                    if (document.TypeCode != AdditionalReferencedDocumentTypeCode.Unknown)
+                    if (document.TypeCode.HasValue)
                     {
-                        Writer.WriteElementString("cbc", "DocumentTypeCode", document.TypeCode.EnumValueToString());
+                        Writer.WriteElementString("cbc", "DocumentTypeCode", EnumExtensions.EnumToString<AdditionalReferencedDocumentTypeCode>(document.TypeCode.Value));
                     }
                     Writer.WriteOptionalElementString("cbc", "DocumentDescription", document.Name); // BT-123
 
@@ -697,7 +709,7 @@ namespace s2industries.ZUGFeRD
             // TODO Add Tax Information for the tradeline item
 
             //Write sub invoice lines recursively
-            foreach (TradeLineItem subTradeLineItem in this.Descriptor.TradeLineItems.Where(t => t.AssociatedDocument.ParentLineID == tradeLineItem.AssociatedDocument.LineID))
+            foreach (TradeLineItem subTradeLineItem in this.Descriptor.GetTradeLineItems().Where(t => t.AssociatedDocument.ParentLineID == tradeLineItem.AssociatedDocument.LineID))
             {
                 _WriteTradeLineItem(subTradeLineItem, isInvoice);
             }
@@ -839,6 +851,14 @@ namespace s2industries.ZUGFeRD
                             writer.WriteAttributeString("schemeID", party.GlobalID.SchemeID.Value.EnumToString());
                         }
                         writer.WriteValue(party.GlobalID.ID);
+                        writer.WriteEndElement();//!ID
+                        writer.WriteEndElement();//!PartyIdentification
+                    }
+                    else if ((party.ID != null) && (!String.IsNullOrWhiteSpace(party.ID.ID)))
+                    {
+                        writer.WriteStartElement("cac", "PartyIdentification");
+                        writer.WriteStartElement("cbc", "ID");
+                        writer.WriteValue(party.ID.ID);
                         writer.WriteEndElement();//!ID
                         writer.WriteEndElement();//!PartyIdentification
                     }

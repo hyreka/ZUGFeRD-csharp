@@ -649,6 +649,33 @@ namespace s2industries.ZUGFeRD.Test
             Assert.AreEqual(bic2, loadedInvoice.CreditorBankAccounts[1].BIC);
         } // !TestMultipleCreditorBankAccounts()
 
+        [TestMethod]
+        public void TestBuyerPartyIdwithoutGloablID()
+        {
+            var d = new InvoiceDescriptor();
+            d.Type = InvoiceType.Invoice;
+            d.InvoiceNo = "471102";
+            d.Currency = CurrencyCodes.EUR;
+            d.InvoiceDate = new DateTime(2018, 3, 5);
+            d.SetBuyer(
+                id: "GE2020211",
+                globalID: null,
+                name: "Kunden AG Mitte",
+                postcode: "69876",
+                city: "Frankfurt",
+                street: "Kundenstraße 15",
+                country: CountryCodes.DE);
+
+            using (var stream = new MemoryStream())
+            {
+                d.Save(stream, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.UBL);
+                stream.Seek(0, SeekOrigin.Begin);
+                InvoiceDescriptor loadedInvoice = InvoiceDescriptor.Load(stream);
+
+                Assert.AreEqual(loadedInvoice.Buyer.ID.ID, "GE2020211");
+            }
+        } // !TestInDebitInvoiceTheFinancialAccountNameShouldNotExist()
+
 
         [TestMethod]
         public void TestPartyIdentificationForSeller()
@@ -676,13 +703,13 @@ namespace s2industries.ZUGFeRD.Test
             // PartyIdentification may only exist once
             Assert.AreEqual(doc.SelectNodes("//cac:AccountingSupplierParty//cac:PartyIdentification", nsmgr).Count, 1);
 
-            // PartyIdentification may only be contained in AccountingSupplierParty --> only one such node in the document
-            Assert.AreEqual(doc.SelectNodes("//cac:PartyIdentification", nsmgr).Count, 1);
+            // PartyIdentification may only exist once
+            Assert.AreEqual(doc.SelectNodes("//cac:AccountingCustomerParty//cac:PartyIdentification", nsmgr).Count, 1);
         } // !TestPartyIdentificationForSeller()
 
 
         [TestMethod]
-        public void TestPartyIdentificationShouldNotExist()
+        public void TestPartyIdentificationShouldExistOneTime()
         {
             InvoiceDescriptor desc = this._InvoiceProvider.CreateInvoice();
             MemoryStream ms = new MemoryStream();
@@ -703,7 +730,7 @@ namespace s2industries.ZUGFeRD.Test
             nsmgr.AddNamespace("cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2");
             nsmgr.AddNamespace("cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2");
 
-            Assert.AreEqual(doc.SelectNodes("//cac:PartyIdentification", nsmgr).Count, 0);
+            Assert.AreEqual(doc.SelectNodes("//cac:PartyIdentification", nsmgr).Count, 1);
         } // !TestPartyIdentificationShouldNotExist()
 
 
@@ -1223,9 +1250,10 @@ namespace s2industries.ZUGFeRD.Test
             MemoryStream ms = new MemoryStream();
 
             desc.Save(ms, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.UBL);
-            desc.Save("e:\\output.xml", ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.UBL);
-
-
+            string tempPath = Path.Combine(Path.GetTempPath(), "output.xml");
+            Console.WriteLine($"Saving testfile for {nameof(TestDesignatedProductClassificationWithFullClassification)} to \"{tempPath}\"");
+            desc.Save(tempPath, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.UBL);
+            
             // string comparison
             ms.Seek(0, SeekOrigin.Begin);
             StreamReader reader = new StreamReader(ms);
@@ -1243,5 +1271,24 @@ namespace s2industries.ZUGFeRD.Test
             Assert.AreEqual("Class Code", loadedInvoice.TradeLineItems.First().GetDesignatedProductClassifications().First().ClassCode);
             Assert.AreEqual(String.Empty, loadedInvoice.TradeLineItems.First().GetDesignatedProductClassifications().First().ClassName);
         } // !TestDesignatedProductClassificationWithFullClassification()
+
+
+        /// <summary>
+        /// UBL credit notes contain tag names different from invoices for the document, the trade line items and the billed quantity.
+        /// </summary>
+        [TestMethod]
+        public void TestBasicCreditNote()
+        {
+            string path = @"..\..\..\..\demodata\xRechnung\ubl-cn-br-de-17-test-559-code-384.xml";
+            path = _makeSurePathIsCrossPlatformCompatible(path);
+            
+            InvoiceDescriptor desc = InvoiceDescriptor.Load(path);
+            Assert.AreEqual(desc.Type, InvoiceType.Correction);
+            Assert.AreEqual(desc.GetTradeLineItems().Count, 2);
+            Assert.AreEqual(desc.GetTradeLineItems().First().BilledQuantity, 33);
+            Assert.AreEqual(desc.GetTradeLineItems().First().UnitCode, QuantityCodes.XPP);
+            Assert.AreEqual(desc.GetTradeLineItems().Last().BilledQuantity, 42);
+            Assert.AreEqual(desc.GetTradeLineItems().Last().UnitCode, QuantityCodes.XPP);
+        } // !TestBasicCreditNote()
     }
 }

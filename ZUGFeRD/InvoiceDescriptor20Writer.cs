@@ -123,10 +123,10 @@ namespace s2industries.ZUGFeRD
              * @todo continue here to adopt v2 tag names
              */
 
-            #region SpecifiedSupplyChainTradeTransaction
+            #region SupplyChainTradeTransaction
             Writer.WriteStartElement("rsm", "SupplyChainTradeTransaction");
 
-            foreach (TradeLineItem tradeLineItem in this.Descriptor.TradeLineItems)
+            foreach (TradeLineItem tradeLineItem in this.Descriptor.GetTradeLineItems())
             {
                 Writer.WriteStartElement("ram", "IncludedSupplyChainTradeLineItem");
 
@@ -136,7 +136,7 @@ namespace s2industries.ZUGFeRD
                     Writer.WriteOptionalElementString("ram", "LineID", tradeLineItem.AssociatedDocument.LineID);
                     if (tradeLineItem.AssociatedDocument.LineStatusCode.HasValue)
                     {
-                        Writer.WriteElementString("ram", "LineStatusCode", tradeLineItem.AssociatedDocument.LineStatusCode.Value.EnumValueToString());
+                        Writer.WriteElementString("ram", "LineStatusCode", EnumExtensions.EnumToString<LineStatusCodes>(tradeLineItem.AssociatedDocument.LineStatusCode));
                     }
                     if (tradeLineItem.AssociatedDocument.LineStatusReasonCode.HasValue)
                     {
@@ -202,7 +202,6 @@ namespace s2industries.ZUGFeRD
 
                     // reference to the order position
                     Writer.WriteOptionalElementString("ram", "LineID", tradeLineItem.BuyerOrderReferencedDocument.LineID);
-                    #endregion
 
                     if (tradeLineItem.BuyerOrderReferencedDocument.IssueDateTime.HasValue)
                     {
@@ -220,6 +219,10 @@ namespace s2industries.ZUGFeRD
                 if (tradeLineItem.ContractReferencedDocument != null)
                 {
                     Writer.WriteStartElement("ram", "ContractReferencedDocument", Profile.Extended);
+
+                    // reference to the contract position
+                    Writer.WriteOptionalElementString("ram", "LineID", tradeLineItem.ContractReferencedDocument.LineID);
+
                     if (tradeLineItem.ContractReferencedDocument.IssueDateTime.HasValue)
                     {
                         Writer.WriteStartElement("ram", "FormattedIssueDateTime");
@@ -249,21 +252,21 @@ namespace s2industries.ZUGFeRD
                     Writer.WriteElementString("ram", "LineID", String.Format("{0}", tradeLineItem.AssociatedDocument?.LineID));
                     Writer.WriteOptionalElementString("ram", "IssuerAssignedID", document.ID);
 
-                    if (document.TypeCode != AdditionalReferencedDocumentTypeCode.Unknown)
+                    if (document.TypeCode.HasValue)
                     {
-                        Writer.WriteElementString("ram", "TypeCode", document.TypeCode.EnumValueToString());
+                        Writer.WriteElementString("ram", "TypeCode", EnumExtensions.EnumToString<AdditionalReferencedDocumentTypeCode>(document.TypeCode.Value));
                     }
 
-                    if (document.ReferenceTypeCode != ReferenceTypeCodes.Unknown)
+                    if (document.ReferenceTypeCode.HasValue)
                     {
-                        Writer.WriteElementString("ram", "ReferenceTypeCode", document.ReferenceTypeCode.EnumToString());
+                        Writer.WriteElementString("ram", "ReferenceTypeCode", document.ReferenceTypeCode.Value.EnumToString());
                     }
 
                     Writer.WriteEndElement(); // !ram:AdditionalReferencedDocument
                 } // !foreach(document)
 
                 Writer.WriteStartElement("ram", "GrossPriceProductTradePrice");
-                _writeOptionalAmount(Writer, "ram", "ChargeAmount", tradeLineItem.GrossUnitPrice);
+                _writeOptionalAdaptiveAmount(Writer, "ram", "ChargeAmount", tradeLineItem.GrossUnitPrice, 2, 4);
                 if (tradeLineItem.UnitQuantity.HasValue)
                 {
                     _writeElementWithAttribute(Writer, "ram", "BasisQuantity", "unitCode", tradeLineItem.UnitCode.EnumToString(), _formatDecimal(tradeLineItem.UnitQuantity.Value, 4));
@@ -288,7 +291,7 @@ namespace s2industries.ZUGFeRD
                     Writer.WriteEndElement();
 
                     Writer.WriteOptionalElementString("ram", "Reason", tradeAllowanceCharge.Reason, Profile.Comfort | Profile.Extended);
-					// "ReasonCode" nicht im 2.0 Standard!
+                    // "ReasonCode" nicht im 2.0 Standard!
 
                     Writer.WriteEndElement(); // !AppliedTradeAllowanceCharge
                 }
@@ -296,7 +299,7 @@ namespace s2industries.ZUGFeRD
                 Writer.WriteEndElement(); // ram:GrossPriceProductTradePrice
 
                 Writer.WriteStartElement("ram", "NetPriceProductTradePrice");
-                _writeOptionalAmount(Writer, "ram", "ChargeAmount", tradeLineItem.NetUnitPrice);
+                _writeOptionalAdaptiveAmount(Writer, "ram", "ChargeAmount", tradeLineItem.NetUnitPrice, 2, 4);
 
                 if (tradeLineItem.UnitQuantity.HasValue)
                 {
@@ -324,12 +327,13 @@ namespace s2industries.ZUGFeRD
                             Writer.WriteStartElement("ram", "FormattedIssueDateTime");
                             Writer.WriteStartElement("qdt", "DateTimeString");
                             Writer.WriteAttributeString("format", "102");
-                            Writer.WriteValue(_formatDate(this.Descriptor.OrderDate.Value));
+                            Writer.WriteValue(_formatDate(tradeLineItem.DeliveryNoteReferencedDocument.IssueDateTime.Value));
                             Writer.WriteEndElement(); // !qdt:DateTimeString
                             Writer.WriteEndElement(); // !ram:FormattedIssueDateTime
                         }
 
                         Writer.WriteOptionalElementString("ram", "IssuerAssignedID", tradeLineItem.DeliveryNoteReferencedDocument.ID);
+                        Writer.WriteOptionalElementString("ram", "LineID", tradeLineItem.DeliveryNoteReferencedDocument.LineID);
                         Writer.WriteEndElement(); // !ram:DeliveryNoteReferencedDocument
                     }
 
@@ -411,6 +415,15 @@ namespace s2industries.ZUGFeRD
             _writeOptionalParty(Writer, "ram", "SellerTradeParty", this.Descriptor.Seller, this.Descriptor.SellerContact, TaxRegistrations: this.Descriptor.SellerTaxRegistration);
             _writeOptionalParty(Writer, "ram", "BuyerTradeParty", this.Descriptor.Buyer, this.Descriptor.BuyerContact, TaxRegistrations: this.Descriptor.BuyerTaxRegistration);
 
+            #region ApplicableTradeDeliveryTerms
+            if (Descriptor.ApplicableTradeDeliveryTermsCode.HasValue)
+            {
+                // BG-X-22, BT-X-145
+                Writer.WriteStartElement("ram", "ApplicableTradeDeliveryTerms", Profile.Extended);
+                Writer.WriteElementString("ram", "DeliveryTypeCode", this.Descriptor.ApplicableTradeDeliveryTermsCode.Value.GetDescriptionAttribute());
+                Writer.WriteEndElement(); // !ApplicableTradeDeliveryTerms
+            }
+            #endregion
 
             #region SellerOrderReferencedDocument (BT-14: Comfort, Extended)
             if (null != this.Descriptor.SellerOrderReferencedDocument && !string.IsNullOrWhiteSpace(Descriptor.SellerOrderReferencedDocument.ID))
@@ -458,19 +471,20 @@ namespace s2industries.ZUGFeRD
                     {
                         Writer.WriteStartElement("ram", "FormattedIssueDateTime");
                         Writer.WriteStartElement("qdt", "DateTimeString");
+                        Writer.WriteAttributeString("format", "102");
                         Writer.WriteValue(_formatDate(document.IssueDateTime.Value));
                         Writer.WriteEndElement(); // !udt:DateTimeString
                         Writer.WriteEndElement(); // !FormattedIssueDateTime
                     }
 
-                    if (document.TypeCode != AdditionalReferencedDocumentTypeCode.Unknown)
+                    if (document.TypeCode.HasValue)
                     {
-                        Writer.WriteElementString("ram", "TypeCode", document.TypeCode.EnumToString());
+                        Writer.WriteElementString("ram", "TypeCode", document.TypeCode.Value.EnumToString());
                     }
 
-                    if (document.ReferenceTypeCode != ReferenceTypeCodes.Unknown)
+                    if (document.ReferenceTypeCode.HasValue)
                     {
-                        Writer.WriteElementString("ram", "ReferenceTypeCode", document.ReferenceTypeCode.EnumToString());
+                        Writer.WriteElementString("ram", "ReferenceTypeCode", document.ReferenceTypeCode.Value.EnumToString());
                     }
 
                     Writer.WriteElementString("ram", "ID", document.ID);
@@ -577,7 +591,7 @@ namespace s2industries.ZUGFeRD
             }
 
             //  10. SpecifiedTradeSettlementPaymentMeans (optional)
-            if (this.Descriptor.CreditorBankAccounts.Count == 0 && this.Descriptor.DebitorBankAccounts.Count == 0)
+            if (!this.Descriptor.AnyCreditorFinancialAccount() && !this.Descriptor.AnyDebitorFinancialAccount())
             {
                 if (this.Descriptor.PaymentMeans != null)
                 {
@@ -601,7 +615,7 @@ namespace s2industries.ZUGFeRD
             }
             else
             {
-                foreach (BankAccount account in this.Descriptor.CreditorBankAccounts)
+                foreach (BankAccount creditorAccount in this.Descriptor.GetCreditorFinancialAccounts())
                 {
                     Writer.WriteStartElement("ram", "SpecifiedTradeSettlementPaymentMeans");
 
@@ -620,19 +634,19 @@ namespace s2industries.ZUGFeRD
                     }
 
                     Writer.WriteStartElement("ram", "PayeePartyCreditorFinancialAccount");
-                    Writer.WriteElementString("ram", "IBANID", account.IBAN);
-                    Writer.WriteOptionalElementString("ram", "AccountName", account.Name);
-                    Writer.WriteOptionalElementString("ram", "ProprietaryID", account.ID);
+                    Writer.WriteElementString("ram", "IBANID", creditorAccount.IBAN);
+                    Writer.WriteOptionalElementString("ram", "AccountName", creditorAccount.Name);
+                    Writer.WriteOptionalElementString("ram", "ProprietaryID", creditorAccount.ID);
                     Writer.WriteEndElement(); // !PayeePartyCreditorFinancialAccount
 
                     Writer.WriteStartElement("ram", "PayeeSpecifiedCreditorFinancialInstitution");
-                    Writer.WriteElementString("ram", "BICID", account.BIC);
-                    Writer.WriteOptionalElementString("ram", "GermanBankleitzahlID", account.Bankleitzahl);
+                    Writer.WriteElementString("ram", "BICID", creditorAccount.BIC);
+                    Writer.WriteOptionalElementString("ram", "GermanBankleitzahlID", creditorAccount.Bankleitzahl);
                     Writer.WriteEndElement(); // !PayeeSpecifiedCreditorFinancialInstitution
                     Writer.WriteEndElement(); // !SpecifiedTradeSettlementPaymentMeans
                 }
 
-                foreach (BankAccount account in this.Descriptor.DebitorBankAccounts)
+                foreach (BankAccount debitorAccount in this.Descriptor.GetDebitorFinancialAccounts())
                 {
                     Writer.WriteStartElement("ram", "SpecifiedTradeSettlementPaymentMeans");
 
@@ -643,21 +657,9 @@ namespace s2industries.ZUGFeRD
                     }
 
                     Writer.WriteStartElement("ram", "PayerPartyDebtorFinancialAccount");
-                    Writer.WriteElementString("ram", "IBANID", account.IBAN);
-                    Writer.WriteOptionalElementString("ram", "ProprietaryID", account.ID);
+                    Writer.WriteElementString("ram", "IBANID", debitorAccount.IBAN);
+                    Writer.WriteOptionalElementString("ram", "ProprietaryID", debitorAccount.ID);
                     Writer.WriteEndElement(); // !PayerPartyDebtorFinancialAccount
-
-                    if (!string.IsNullOrWhiteSpace(account.BIC) ||
-                        !string.IsNullOrWhiteSpace(account.Bankleitzahl) ||
-                        !string.IsNullOrWhiteSpace(account.BankName))
-                    {
-                        Writer.WriteStartElement("ram", "PayerSpecifiedDebtorFinancialInstitution");
-
-                        Writer.WriteOptionalElementString("ram", "BICID", account.BIC);
-                        Writer.WriteOptionalElementString("ram", "GermanBankleitzahlID", account.Bankleitzahl);
-                        Writer.WriteOptionalElementString("ram", "Name", account.BankName);
-                        Writer.WriteEndElement(); // !PayerSpecifiedDebtorFinancialInstitution
-                    }
 
                     Writer.WriteEndElement(); // !SpecifiedTradeSettlementPaymentMeans
                 }
@@ -714,7 +716,7 @@ namespace s2industries.ZUGFeRD
                 Writer.WriteElementString("udt", "Indicator", tradeAllowanceCharge.ChargeIndicator ? "true" : "false");
                 Writer.WriteEndElement(); // !ram:ChargeIndicator
 
-				// TODO: SequenceNumeric
+                // TODO: SequenceNumeric
 
                 if (tradeAllowanceCharge.BasisAmount.HasValue)
                 {
@@ -743,7 +745,7 @@ namespace s2industries.ZUGFeRD
             }
 
             //  14. SpecifiedLogisticsServiceCharge (optional)
-            foreach (ServiceCharge serviceCharge in this.Descriptor.ServiceCharges)
+            foreach (ServiceCharge serviceCharge in this.Descriptor.GetLogisticsServiceCharges())
             {
                 Writer.WriteStartElement("ram", "SpecifiedLogisticsServiceCharge");
                 if (!String.IsNullOrWhiteSpace(serviceCharge.Description))
@@ -926,6 +928,7 @@ namespace s2industries.ZUGFeRD
             Writer.WriteEndElement(); // !ram:ApplicableHeaderTradeSettlement
 
             Writer.WriteEndElement(); // !ram:SupplyChainTradeTransaction
+            #endregion
 
             Writer.WriteEndElement(); // !ram:Invoice
             Writer.WriteEndDocument();
@@ -950,6 +953,33 @@ namespace s2industries.ZUGFeRD
         } // !_writeOptionalAmount()
 
 
+        private void _writeOptionalAdaptiveAmount(ProfileAwareXmlTextWriter writer, string prefix, string tagName, decimal? value, int numDecimals = 2, int maxNumDecimals = 4, bool forceCurrency = false, Profile profile = Profile.Unknown)
+        {
+            if (!value.HasValue)
+            {
+                return;
+            }
+
+            writer.WriteStartElement(prefix, tagName, profile);
+            if (forceCurrency)
+            {
+                writer.WriteAttributeString("currencyID", this.Descriptor.Currency.EnumToString());
+            }
+
+            decimal rounded = Math.Round(value.Value, numDecimals, MidpointRounding.AwayFromZero);
+            if (value == rounded)
+            {
+                writer.WriteValue(_formatDecimal(value.Value, numDecimals));
+            }
+            else
+            {
+                writer.WriteValue(_formatDecimal(value.Value, maxNumDecimals));
+            }
+
+            writer.WriteEndElement(); // !tagName
+        } // !_writeOptionalAdaptiveAmount()
+
+
         private void _writeElementWithAttribute(ProfileAwareXmlTextWriter writer, string prefix, string tagName, string attributeName, string attributeValue, string nodeValue)
         {
             writer.WriteStartElement(prefix, tagName);
@@ -961,7 +991,7 @@ namespace s2industries.ZUGFeRD
 
         private void _writeOptionalTaxes(ProfileAwareXmlTextWriter writer)
         {
-            foreach (Tax tax in this.Descriptor.Taxes)
+            foreach (Tax tax in this.Descriptor.GetApplicableTradeTaxes())
             {
                 writer.WriteStartElement("ram", "ApplicableTradeTax");
 
@@ -975,17 +1005,17 @@ namespace s2industries.ZUGFeRD
                 writer.WriteValue(_formatDecimal(tax.BasisAmount));
                 writer.WriteEndElement(); // !BasisAmount
 
-                if (tax.AllowanceChargeBasisAmount.HasValue && (tax.AllowanceChargeBasisAmount.Value != 0))
-                {
-                    writer.WriteStartElement("ram", "AllowanceChargeBasisAmount", Profile.Extended);
-                    writer.WriteValue(_formatDecimal(tax.AllowanceChargeBasisAmount));
-                    writer.WriteEndElement(); // !AllowanceChargeBasisAmount
-                }
                 if (tax.LineTotalBasisAmount.HasValue && (tax.LineTotalBasisAmount.Value != 0))
                 {
                     writer.WriteStartElement("ram", "LineTotalBasisAmount", Profile.Extended);
                     writer.WriteValue(_formatDecimal(tax.LineTotalBasisAmount));
                     writer.WriteEndElement();
+                }
+                if (tax.AllowanceChargeBasisAmount.HasValue && (tax.AllowanceChargeBasisAmount.Value != 0))
+                {
+                    writer.WriteStartElement("ram", "AllowanceChargeBasisAmount", Profile.Extended);
+                    writer.WriteValue(_formatDecimal(tax.AllowanceChargeBasisAmount));
+                    writer.WriteEndElement(); // !AllowanceChargeBasisAmount
                 }
 
                 if (tax.CategoryCode.HasValue)
@@ -1174,7 +1204,7 @@ namespace s2industries.ZUGFeRD
 
             if (descriptor.Profile != Profile.Extended) // check tax types, only extended profile allows tax types other than vat
             {
-                if (!descriptor.TradeLineItems.All(l => l.TaxType.Equals(TaxTypes.VAT) || l.TaxType.Equals(TaxTypes.Unknown)))
+                if (!descriptor.GetTradeLineItems().All(l => l.TaxType.Equals(TaxTypes.VAT) || l.TaxType.Equals(TaxTypes.Unknown)))
                 {
                     if (throwExceptions) { throw new UnsupportedException("Tax types other than VAT only possible with extended profile."); }
                     return false;
